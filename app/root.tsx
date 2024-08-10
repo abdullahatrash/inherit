@@ -47,6 +47,7 @@ import { type Theme, getTheme } from './utils/theme.server.ts'
 import { makeTimings, time } from './utils/timing.server.ts'
 import { getToast } from './utils/toast.server.ts'
 import { useOptionalUser, useUser } from './utils/user.ts'
+import LogoIcon from './components/logo-icon.tsx'
 
 export const links: LinksFunction = () => {
 	return [
@@ -243,12 +244,13 @@ function App() {
 function Logo() {
 	return (
 		<Link to="/" className="group grid leading-snug">
-			<span className="font-light transition group-hover:-translate-x-1">
+			<LogoIcon />
+			{/* <span className="font-light transition group-hover:-translate-x-1">
 				Inherit
 			</span>
 			<span className="font-bold transition group-hover:translate-x-1">
 				project
-			</span>
+			</span> */}
 		</Link>
 	)
 }
