@@ -1,3 +1,3 @@
 export default function TermsOfServiceRoute() {
-	return <div>Terms of service page</div>
+	return <div>How the assessment tool works</div>
 }
