@@ -1,7 +1,9 @@
+import { LatLngTuple } from 'leaflet'
 import React, { useState } from 'react'
+
 import { ClientOnly } from 'remix-utils/client-only'
 
-const cityCoordinates = {
+const cityCoordinates: Record<string, LatLngTuple> = {
   metz: [49.1193, 6.1757],
   athens: [37.9838, 23.7275],
   jastrebarsko: [45.6693, 15.6459],
@@ -13,7 +15,7 @@ const cityCoordinates = {
 }
 
 export default function MapSection() {
-  const [coords, setCoords] = useState(cityCoordinates.metz) // Default to Metz
+  const [coords, setCoords] = useState<LatLngTuple>(cityCoordinates.metz ?? [0, 0]) // Default to Metz or [0, 0]
 
   return (
     <div className="flex h-screen w-full">
@@ -28,8 +30,13 @@ export default function MapSection() {
   )
 }
 
-function MapComponent({ coords }: any) {
-  const Map = React.lazy(() => import('./LeafletMap.tsx'))
+interface MapComponentProps {
+  coords: LatLngTuple
+}
+
+function MapComponent({ coords }: MapComponentProps) {
+  // Add this type annotation for the dynamically imported component
+  const Map = React.lazy(() => import('./LeafletMap')) as React.ComponentType<MapComponentProps>
   
   return (
     <React.Suspense fallback={<div>Loading map...</div>}>

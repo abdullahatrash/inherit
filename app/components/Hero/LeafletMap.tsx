@@ -7,7 +7,7 @@ import {
 	useMap,
 	SVGOverlay,
 } from 'react-leaflet'
-import L from 'leaflet'
+import L, { LatLngTuple } from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { LandPlot } from 'lucide-react'
 import { Button } from '../ui/button'
@@ -16,19 +16,19 @@ import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png'
 import iconUrl from 'leaflet/dist/images/marker-icon.png'
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png'
 
-const cityCoordinates = {
-	metz: [49.1193, 6.1757],
-	athens: [37.9838, 23.7275],
-	jastrebarsko: [45.6693, 15.6459],
-	riga: [56.9496, 24.1052],
-	gdynia: [54.5189, 18.5305],
-	valladolid: [41.6523, -4.7245],
-	gotland: [57.5349, 18.2995],
-	izmir: [38.4237, 27.1428],
+const cityCoordinates: Record<string, LatLngTuple> = {
+  metz: [49.1193, 6.1757],
+  athens: [37.9838, 23.7275],
+  jastrebarsko: [45.6693, 15.6459],
+  riga: [56.9496, 24.1052],
+  gdynia: [54.5189, 18.5305],
+  valladolid: [41.6523, -4.7245],
+  gotland: [57.5349, 18.2995],
+  izmir: [38.4237, 27.1428],
 }
 
 // Add SVG images for each city
-const citySVGs = {
+const citySVGs: Record<string, JSX.Element> = {
 	metz: (
 		<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 			<circle
@@ -166,24 +166,26 @@ function LeafletIconFix() {
 	return null
 }
 
-function FlyToLocation({ coords }) {
-	const map = useMap()
+function FlyToLocation({ coords }: { coords: LatLngTuple }) {
+  const map = useMap()
 
-	useEffect(() => {
-		if (coords) {
-			map.flyTo(coords, 13, {
-				animate: true,
-				duration: 1.5,
-			})
-		}
-	}, [coords, map])
+  useEffect(() => {
+    if (coords) {
+      map.flyTo(coords, 13, {
+        animate: true,
+        duration: 1.5,
+      })
+    }
+  }, [coords, map])
 
-	return null
+  return null
 }
 
-import { LatLngTuple } from 'leaflet'
+interface LeafletMapProps {
+  coords: LatLngTuple
+}
 
-function LeafletMap({ coords }: { coords: [number, number] }) {
+function LeafletMap({ coords }: LeafletMapProps) {
 	const svgSize = 0.02 // 0.01 degrees is about 1km
 	return (
 		<MapContainer
@@ -242,7 +244,7 @@ function LeafletMap({ coords }: { coords: [number, number] }) {
 }
 
 export default function MapSection() {
-	const [coords, setCoords] = useState(cityCoordinates.metz) // Default to Metz
+	const [coords, setCoords] = useState<LatLngTuple>(cityCoordinates.metz ?? [0, 0]) // Default to Metz
 
 	return (
 		<div className="flex h-screen w-full">
