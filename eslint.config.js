@@ -4,4 +4,13 @@ import { default as defaultConfig } from '@epic-web/config/eslint'
 export default [
 	...defaultConfig,
 	// add custom config objects here:
+    {
+        languageOptions: {
+          parserOptions: {
+            projectService: {
+              maximumDefaultProjectFileMatchCount: 20 // Adjust this value as needed
+            }
+          }
+        }
+      }
 ]
