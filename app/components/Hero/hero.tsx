@@ -20,7 +20,7 @@ export default function Hero() {
       </p>
       <div className="flex space-x-4 mb-12">
         <Button asChild  variant="default" size="lg"><Link to="/login">Get started</Link></Button>
-        <Button asChild variant="outline" size="lg"><Link to="/tos">How it works</Link></Button>
+        <Button asChild variant="outline" size="lg"><Link to="/assessment">How it works</Link></Button>
       </div>
       <div className="w-full overflow-hidden rounded-lg border border-gray-200 shadow-lg">
         <MapSection />

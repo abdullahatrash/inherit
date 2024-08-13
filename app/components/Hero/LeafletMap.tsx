@@ -186,7 +186,17 @@ interface LeafletMapProps {
 }
 
 function LeafletMap({ coords }: LeafletMapProps) {
+  const [isMapReady, setIsMapReady] = useState(false)
 	const svgSize = 0.02 // 0.01 degrees is about 1km
+
+  useEffect(() => {
+    setIsMapReady(true)
+  }, [])
+
+  if (!isMapReady) {
+    return <div className="h-full w-full bg-gray-200">Map initializing...</div>
+  }
+  
 	return (
 		<MapContainer
 			center={coords}

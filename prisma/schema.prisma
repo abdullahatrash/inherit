@@ -167,3 +167,23 @@ model Connection {
 
   @@unique([providerName, providerId])
 }
+
+model Pillar {
+  id     String  @id @default(cuid())
+  name   String
+  weight Float
+  score  Float   @default(0)
+  kpis   KPI[]
+}
+
+model KPI {
+  id                   String  @id @default(cuid())
+  name                 String
+  currentValue         Float
+  targetValue          Float
+  positiveContribution Boolean
+  weight               Float
+  score                Float   @default(0)
+  pillarId             String
+  pillar               Pillar  @relation(fields: [pillarId], references: [id])
+}

@@ -258,6 +258,19 @@ async function seed() {
 	console.timeEnd(`🐨 Created admin user "kody"`)
 
 	console.timeEnd(`🌱 Database has been seeded`)
+
+	const pillars = [
+		{ name: 'Energy Performance', weight: 25, score: 0 },
+		{ name: 'Resource Efficiency', weight: 25, score: 0 },
+		{ name: 'Climate Resilience', weight: 25, score: 0 },
+		{ name: 'Accessibility', weight: 25, score: 0 },
+	  ]
+	
+	  for (const pillar of pillars) {
+		await prisma.pillar.create({ data: pillar })
+	  }
+	
+	  console.log('Database seeded successfully')
 }
 
 seed()

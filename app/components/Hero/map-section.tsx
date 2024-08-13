@@ -1,5 +1,5 @@
 import { LatLngTuple } from 'leaflet'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import { ClientOnly } from 'remix-utils/client-only'
 
@@ -30,11 +30,24 @@ export default function MapSection() {
   )
 }
 
+function MapFallback() {
+  return <div className="h-full w-full bg-gray-200">Map loading...</div>
+}
+
 interface MapComponentProps {
   coords: LatLngTuple
 }
 
 function MapComponent({ coords }: MapComponentProps) {
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  if (!isClient) {
+    return <MapFallback />
+  }
   // Add this type annotation for the dynamically imported component
   const Map = React.lazy(() => import('./LeafletMap')) as React.ComponentType<MapComponentProps>
   
