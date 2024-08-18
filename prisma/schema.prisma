@@ -194,7 +194,9 @@ model KPI {
   targetValue          Float
   positiveContribution Boolean
   weight               Float
-  score                Float   @default(0)
+  score                Float
   pillarId             String
   pillar               Pillar  @relation(fields: [pillarId], references: [id])
+
+  @@index([pillarId, name])
 }

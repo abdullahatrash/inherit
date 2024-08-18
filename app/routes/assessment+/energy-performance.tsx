@@ -1,5 +1,5 @@
-import { json, type ActionFunction } from '@remix-run/node'
-import { Form, useActionData, useNavigation } from '@remix-run/react'
+import { type ActionFunction, json, type LoaderFunction } from '@remix-run/node'
+import { Form, Link, useActionData, useLoaderData, useNavigation } from '@remix-run/react'
 import { InfoIcon, TrendingUp } from 'lucide-react'
 import {
 	PolarAngleAxis,
@@ -12,7 +12,12 @@ import {
 	LabelList,
 	Line,
 } from 'recharts'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '#app/components/ui/tooltip.js'
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from '#app/components/ui/tooltip.js'
 import { Button } from '../../components/ui/button'
 import {
 	Card,
@@ -38,7 +43,7 @@ import {
 	TableHeader,
 	TableRow,
 } from '../../components/ui/table'
-
+import { prisma } from '../../utils/db.server'
 
 interface KPIData {
 	id: string
@@ -160,27 +165,104 @@ const kpiDefinitions = [
 	},
 ]
 
-export const action: ActionFunction = async ({ request }) => {
-	const formData = await request.formData()
-	const kpiData = kpiDefinitions.map((kpi) => {
-		const currentValue = Number(formData.get(kpi.id))
-		const achievement = calculateAchievement(
-			currentValue,
-			kpi.targetValue,
-			kpi.positiveContribution,
-		)
-		const score = calculateScore(achievement, kpi.kpiWeight)
-		return {
-			...kpi,
-			currentValue,
-			achievement,
-			score,
-			pillarWeight: 25, // Assuming equal weight for all pillars
-		}
+export const loader: LoaderFunction = async ({ request }) => {
+	const url = new URL(request.url)
+	const buildingId = url.searchParams.get('buildingId')
+
+	if (!buildingId) {
+		throw new Response('Building ID is required', { status: 400 })
+	}
+
+	const pillar = await prisma.pillar.findFirst({
+		where: { buildingId, name: 'Energy Performance' },
+		include: { kpis: true },
 	})
 
-	return json({ kpiData })
+	if (!pillar) {
+		throw new Response(
+			'Energy Performance pillar not found for this building',
+			{ status: 404 },
+		)
+	}
+
+	return json({ buildingId, pillar })
 }
+
+export const action: ActionFunction = async ({ request }) => {
+	const formData = await request.formData()
+	const buildingId = formData.get("buildingId") as string
+  
+	if (!buildingId) {
+	  return json({ error: "Building ID is required" }, { status: 400 })
+	}
+  
+	const pillar = await prisma.pillar.findFirst({
+	  where: { buildingId, name: "Energy Performance" },
+	  include: { kpis: true },
+	});
+  
+	if (!pillar) {
+	  return json({ error: "Energy Performance pillar not found for this building" }, { status: 404 })
+	}
+  
+	const kpiData = await Promise.all(kpiDefinitions.map(async (kpi) => {
+	  const currentValue = Number(formData.get(kpi.id))
+	  const achievement = calculateAchievement(
+		currentValue,
+		kpi.targetValue,
+		kpi.positiveContribution,
+	  )
+	  const score = calculateScore(achievement, kpi.kpiWeight)
+  
+	  // Find existing KPI or create a new one
+	  let existingKPI = await prisma.kPI.findFirst({
+		where: {
+		  pillarId: pillar.id,
+		  name: kpi.name,
+		},
+	  })
+  
+	  if (existingKPI) {
+		// Update existing KPI
+		existingKPI = await prisma.kPI.update({
+		  where: { id: existingKPI.id },
+		  data: {
+			currentValue,
+			score,
+		  },
+		})
+	  } else {
+		// Create new KPI
+		existingKPI = await prisma.kPI.create({
+		  data: {
+			name: kpi.name,
+			currentValue,
+			targetValue: kpi.targetValue,
+			positiveContribution: kpi.positiveContribution === 1,
+			weight: kpi.kpiWeight,
+			score,
+			pillarId: pillar.id,
+		  },
+		})
+	  }
+  
+	  return {
+		...kpi,
+		currentValue,
+		achievement,
+		score,
+	  }
+	}))
+  
+	// Calculate and update pillar score
+	const totalScore = kpiData.reduce((sum, kpi) => sum + kpi.score, 0)
+	await prisma.pillar.update({
+	  where: { id: pillar.id },
+	  data: { score: totalScore },
+	})
+  
+	return json({ kpiData, pillarScore: totalScore })
+  }
 
 function calculateAchievement(
 	currentValue: number,
@@ -197,9 +279,18 @@ function calculateScore(achievement: number, weight: number): number {
 }
 
 export default function EnergyPerformanceAssessment() {
-	const actionData = useActionData<{ kpiData: KPIData[] }>()
-	const transition = useNavigation()
-	const isSubmitting = transition.state === 'submitting'
+	const { buildingId, pillar } = useLoaderData<typeof loader>();
+	const actionData = useActionData<typeof action>();
+	const navigation = useNavigation();
+	const isSubmitting = navigation.state === 'submitting';
+
+	const initialKpiData = pillar.kpis.reduce(
+		(acc, kpi) => {
+			acc[kpi.name] = kpi.currentValue
+			return acc
+		},
+		{} as Record<string, number>,
+	)
 
 	const radarChartData =
 		actionData?.kpiData.map((kpi) => ({
@@ -219,24 +310,36 @@ export default function EnergyPerformanceAssessment() {
 			<h1 className="mb-4 text-2xl font-bold">Energy Performance Assessment</h1>
 
 			{!actionData ? (
-				<Form method="post" className="space-y-4 border border-slate-100 rounded-md p-4">
+				<Form
+					method="post"
+					className="space-y-4 rounded-md border border-slate-100 p-4"
+				>
+					<input type="hidden" name="buildingId" value={buildingId} />
 
 					{kpiDefinitions.map((kpi) => (
-              <div key={kpi.id} className="flex flex-col">
-                <Label className='pb-3 flex items-center' htmlFor={kpi.id}>
-                  {kpi.name}
-                  {/* <span className='ml-2 text-muted-foreground'>Current value</span> */}
-                <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <InfoIcon className='h-6 w-6' />
-                  </TooltipTrigger>
-                  <TooltipContent>Target value{' '}{kpi.targetValue}</TooltipContent>
-                </Tooltip>
-                </TooltipProvider>
-                </Label>
-                <Input className='w-96' type="number" id={kpi.id} name={kpi.id} required />
-              </div>
+						<div key={kpi.id} className="flex flex-col">
+							<Label className="flex items-center pb-3" htmlFor={kpi.id}>
+								{kpi.name}
+								<TooltipProvider>
+									<Tooltip>
+										<TooltipTrigger>
+											<InfoIcon className="h-6 w-6" />
+										</TooltipTrigger>
+										<TooltipContent>
+											Target value {kpi.targetValue}
+										</TooltipContent>
+									</Tooltip>
+								</TooltipProvider>
+							</Label>
+							<Input
+								className="w-96"
+								type="number"
+								id={kpi.id}
+								name={kpi.id}
+								defaultValue={initialKpiData[kpi.name] || ''}
+								required
+							/>
+						</div>
 					))}
 					<Button type="submit" disabled={isSubmitting}>
 						{isSubmitting ? 'Calculating...' : 'Calculate Scores'}
@@ -244,6 +347,9 @@ export default function EnergyPerformanceAssessment() {
 				</Form>
 			) : (
 				<div className="space-y-8">
+					<Link to={`/buildings/${buildingId}`}>
+            			<Button variant="outline" className="mt-4">Back to Building</Button>
+          			</Link>
 					<Card>
 						<CardHeader>
 							<CardTitle>KPI Summary</CardTitle>
@@ -319,6 +425,9 @@ export default function EnergyPerformanceAssessment() {
 							))}
 						</div>
 					</div>
+					<Link to={`/buildings/${buildingId}`}>
+            			<Button variant="outline" className="mt-4">Back to Building</Button>
+          			</Link>
 				</div>
 			)}
 		</div>

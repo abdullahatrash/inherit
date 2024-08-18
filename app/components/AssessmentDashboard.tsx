@@ -24,12 +24,22 @@ export default function AssessmentDashboard({ pillars, buildingId }: { pillars: 
     );
   }
 
+  const getPillarAssessmentLink = (pillar: Pillar) => {
+    switch(pillar.name) {
+      case "Energy Performance":
+        return `/assessment/energy-performance?buildingId=${buildingId}`;
+      // Add cases for other pillars when they're implemented
+      default:
+        return `/assessment/${pillar.id}?buildingId=${buildingId}`;
+    }
+  };
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">INHERIT Assessment Dashboard</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {pillars.map((pillar) => (
-          <Link key={pillar.id} to={`/assessment/${pillar.id}${buildingId ? `?buildingId=${buildingId}` : ''}`}>
+          <Link key={pillar.id} to={getPillarAssessmentLink(pillar)}>
             <Card>
               <CardHeader>
                 <CardTitle>{pillar.name}</CardTitle>
