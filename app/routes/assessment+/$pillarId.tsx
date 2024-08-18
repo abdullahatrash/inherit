@@ -10,6 +10,6 @@ export const loader: LoaderFunction = async ({ params }) => {
   }
   
   export default function PillarAssessmentPage() {
-    const { pillar } = useLoaderData<typeof loader>()
+    const { pillar } = useLoaderData<typeof loader>() as { pillar: any };
     return <PillarAssessment pillar={pillar} />
   }

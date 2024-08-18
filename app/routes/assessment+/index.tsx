@@ -1,7 +1,7 @@
 // app/routes/assessment+/index.tsx
 
 import { json, type LoaderFunction } from "@remix-run/node";
-import { useLoaderData, useSearchParams } from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
 import AssessmentDashboard from "#app/components/AssessmentDashboard";
 import { getPillars } from "#app/models/pillar.server";
 
@@ -14,8 +14,8 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function AssessmentIndex() {
-  const { pillars, buildingId } = useLoaderData<typeof loader>();
-  const [searchParams] = useSearchParams();
+  const { pillars, buildingId } = useLoaderData<typeof loader>() as { pillars: any[]; buildingId: string | null };
+  // const [searchParams] = useSearchParams();
 
-  return <AssessmentDashboard pillars={pillars} buildingId={buildingId} />;
+  return <AssessmentDashboard pillars={pillars} buildingId={buildingId ?? undefined} />;
 }

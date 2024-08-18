@@ -18,7 +18,7 @@ export async function calculatePillarScore(pillarId: string, kpiValues: Record<s
       const score = (achievement / 100) * kpi.weight * (pillar.weight / 100)
       totalScore += score
   
-      await prisma.kpi.update({
+      await prisma.kPI.update({
         where: { id: kpi.id },
         data: { currentValue, score },
       })

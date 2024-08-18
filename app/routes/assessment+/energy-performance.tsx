@@ -279,17 +279,17 @@ function calculateScore(achievement: number, weight: number): number {
 }
 
 export default function EnergyPerformanceAssessment() {
-	const { buildingId, pillar } = useLoaderData<typeof loader>();
-	const actionData = useActionData<typeof action>();
+	const { buildingId, pillar } = useLoaderData<{ buildingId: string; pillar: any }>();
+	const actionData = useActionData<{ kpiData: any[] }>();
 	const navigation = useNavigation();
 	const isSubmitting = navigation.state === 'submitting';
 
-	const initialKpiData = pillar.kpis.reduce(
-		(acc, kpi) => {
+	const initialKpiData: Record<string, number> = pillar.kpis.reduce(
+		(acc: Record<string, number>, kpi: KPIData) => {
 			acc[kpi.name] = kpi.currentValue
 			return acc
 		},
-		{} as Record<string, number>,
+		{},
 	)
 
 	const radarChartData =
