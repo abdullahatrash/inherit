@@ -168,12 +168,23 @@ model Connection {
   @@unique([providerName, providerId])
 }
 
+model Building {
+  id        String   @id @default(cuid())
+  name      String
+  address   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  pillars   Pillar[]
+}
+
 model Pillar {
-  id     String  @id @default(cuid())
-  name   String
-  weight Float
-  score  Float   @default(0)
-  kpis   KPI[]
+  id         String   @id @default(cuid())
+  name       String
+  weight     Float
+  score      Float    @default(0)
+  buildingId String
+  building   Building @relation(fields: [buildingId], references: [id])
+  kpis       KPI[]
 }
 
 model KPI {

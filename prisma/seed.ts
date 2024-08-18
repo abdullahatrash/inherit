@@ -258,19 +258,41 @@ async function seed() {
 	console.timeEnd(`🐨 Created admin user "kody"`)
 
 	console.timeEnd(`🌱 Database has been seeded`)
-
-	const pillars = [
-		{ name: 'Energy Performance', weight: 25, score: 0 },
-		{ name: 'Resource Efficiency', weight: 25, score: 0 },
-		{ name: 'Climate Resilience', weight: 25, score: 0 },
-		{ name: 'Accessibility', weight: 25, score: 0 },
+	const buildings = [
+		{ name: 'Historic Town Hall', address: '123 Main St, Old Town, OT 12345' },
+		{ name: 'Modern Art Museum', address: '456 Culture Ave, New City, NC 67890' },
+		{ name: 'Central Library', address: '789 Book Lane, Readville, RV 13579' },
+		{ name: 'City Theater', address: '101 Stage Road, Drama City, DC 24680' },
+		{ name: 'Community Center', address: '202 Gathering Place, Unitown, UT 97531' }
 	  ]
 	
-	  for (const pillar of pillars) {
-		await prisma.pillar.create({ data: pillar })
-	  }
+	  const defaultPillars = [
+		{ name: 'Energy Performance', weight: 25 },
+		{ name: 'Resource Efficiency', weight: 25 },
+		{ name: 'Climate Resilience', weight: 25 },
+		{ name: 'Accessibility', weight: 25 },
+	  ]
 	
-	  console.log('Database seeded successfully')
+	  for (const building of buildings) {
+		const createdBuilding = await prisma.building.create({
+		  data: {
+			...building,
+			pillars: {
+			  create: defaultPillars.map(pillar => ({
+				...pillar,
+				score: 0,
+				kpis: {
+				  create: [] // You can add default KPIs here if needed
+				}
+			  }))
+			}
+		  },
+		})
+		console.log(`Created building with id: ${createdBuilding.id}`)
+	  }
+
+	  
+  console.log(`Database has been seeded. 🌱`)
 }
 
 seed()

@@ -1,16 +1,21 @@
-import AssessmentDashboard from "#app/components/AssessmentDashboard.js";
-import { getPillars } from "#app/models/pillar.server.js";
-import { json, type LoaderFunction } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+// app/routes/assessment+/index.tsx
 
-export const loader: LoaderFunction = async () => {
-    const pillars = await getPillars();
-    console.log("Pillars fetched in loader:", pillars);
-    return json({ pillars });
-  };
+import { json, type LoaderFunction } from "@remix-run/node";
+import { useLoaderData, useSearchParams } from "@remix-run/react";
+import AssessmentDashboard from "#app/components/AssessmentDashboard";
+import { getPillars } from "#app/models/pillar.server";
+
+export const loader: LoaderFunction = async ({ request }) => {
+  const url = new URL(request.url);
+  const buildingId = url.searchParams.get("buildingId");
   
-  export default function AssessmentIndex() {
-    const { pillars } = useLoaderData<typeof loader>();
-    console.log("Pillars in component:", pillars);
-    return <AssessmentDashboard pillars={pillars} />;
-  }
+  const pillars = await getPillars(buildingId || undefined);
+  return json({ pillars, buildingId });
+};
+
+export default function AssessmentIndex() {
+  const { pillars, buildingId } = useLoaderData<typeof loader>();
+  const [searchParams] = useSearchParams();
+
+  return <AssessmentDashboard pillars={pillars} buildingId={buildingId} />;
+}

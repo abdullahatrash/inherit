@@ -1,7 +1,7 @@
-import PillarAssessment from "#app/components/PillarAssessment.js";
-import { getPillarWithKPIs } from "#app/models/pillar.server.js";
 import { json, type LoaderFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
+import PillarAssessment from "#app/components/PillarAssessment.js";
+import { getPillarWithKPIs } from "#app/models/pillar.server.js";
 
 export const loader: LoaderFunction = async ({ params }) => {
     const pillar = await getPillarWithKPIs(params.pillarId!)
