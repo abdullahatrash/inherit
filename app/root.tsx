@@ -53,26 +53,26 @@ export const links: LinksFunction = () => {
 	return [
 		// Preload svg sprite as a resource to avoid render blocking
 		{ rel: 'preload', href: iconsHref, as: 'image' },
-		{ rel: 'mask-icon', href: '/favicons/mask-icon.svg' },
+		{ rel: 'mask-icon', href: '/favicons/inherit-favicon-32x32.png' },
 		{
 			rel: 'alternate icon',
 			type: 'image/png',
-			href: '/favicons/favicon-32x32.png',
+			href: '/favicons/inherit-favicon-32x32.png',
 		},
-		{ rel: 'apple-touch-icon', href: '/favicons/apple-touch-icon.png' },
+		{ rel: 'apple-touch-icon', href: '/favicons/inherit-favicon-32x32.png' },
 		{
 			rel: 'manifest',
 			href: '/site.webmanifest',
 			crossOrigin: 'use-credentials',
 		} as const, // necessary to make typescript happy
-		{ rel: 'icon', type: 'image/svg+xml', href: '/favicons/favicon.svg' },
+		{ rel: 'icon', type: 'image/svg+xml', href: '/favicons/inherit-favicon-32x32.png' },
 		{ rel: 'stylesheet', href: tailwindStyleSheetUrl },
 	].filter(Boolean)
 }
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
 	return [
-		{ title: data ? 'Epic Notes' : 'Error | Epic Notes' },
+		{ title: data ? 'Inherit' : 'Error | Inherit' },
 		{ name: 'description', content: `Your own captain's log` },
 	]
 }
