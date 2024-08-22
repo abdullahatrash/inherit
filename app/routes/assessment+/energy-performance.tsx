@@ -57,18 +57,6 @@ import {
 } from '../../components/ui/table'
 import { prisma } from '../../utils/db.server'
 
-// interface KPIData {
-// 	id: string
-// 	name: string
-// 	currentValue: number
-// 	targetValue: number
-// 	positiveContribution: boolean
-// 	pillarWeight: number
-// 	kpiWeight: number
-// 	achievement: number
-// 	score: number
-// }
-
 const { getSession, commitSession } = createCookieSessionStorage({
 	cookie: {
 		name: 'energy_performance_session',
@@ -77,13 +65,6 @@ const { getSession, commitSession } = createCookieSessionStorage({
 	},
 })
 
-interface KPIDefinition {
-	id: string
-	name: string
-	targetValue: number
-	positiveContribution: number
-	kpiWeight: number
-}
 const kpiDefinitions = [
 	{ id: 'energy-total', name: 'Energy intensity (total)', targetValue: 30, positiveContribution: 0, kpiWeight: 0 },
 	{ id: 'energy-heating', name: 'Energy intensity (heating)', targetValue: 12, positiveContribution: 0, kpiWeight: 1.25 },

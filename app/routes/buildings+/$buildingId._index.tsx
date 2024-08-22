@@ -6,8 +6,9 @@ import { ChevronLeft, HomeIcon, Landmark } from 'lucide-react'
 import { RadialBarChart, RadialBar, LabelList } from 'recharts'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '#app/components/ui/card.js'
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '#app/components/ui/chart.js'
-import { prisma } from '#app/utils/db.server'
+import { prisma } from '../../utils/db.server'
 import { Button } from '../../components/ui/button'
+import React from 'react'
 
 type LoaderData = {
 	building: {
@@ -146,7 +147,7 @@ export default function BuildingDetails() {
 					</Link>
 				</Button>
         <Button asChild variant="secondary" disabled={!hasAnyAssessment}>
-          <Link to={`/buildings/${building.id}/results`}>
+          <Link to="results">
             View Detailed Results
           </Link>
         </Button>
