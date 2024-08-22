@@ -133,6 +133,7 @@ CREATE TABLE "KPI" (
     "positiveContribution" BOOLEAN NOT NULL,
     "weight" REAL NOT NULL,
     "score" REAL NOT NULL,
+    "achievement" REAL NOT NULL DEFAULT 0,
     "pillarId" TEXT NOT NULL,
     CONSTRAINT "KPI_pillarId_fkey" FOREIGN KEY ("pillarId") REFERENCES "Pillar" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
