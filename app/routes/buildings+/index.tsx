@@ -43,6 +43,7 @@ export const loader: LoaderFunction = async () => {
   const buildings = await prisma.building.findMany({
     select: { id: true, name: true, address: true },
   })
+  console.log("Fetched buildings:", buildings);
   return json({ buildings })
 }
 

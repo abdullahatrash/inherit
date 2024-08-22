@@ -195,6 +195,7 @@ model KPI {
   positiveContribution Boolean
   weight               Float
   score                Float
+  achievement          Float   @default(0)  // Add this line
   pillarId             String
   pillar               Pillar  @relation(fields: [pillarId], references: [id])
 
