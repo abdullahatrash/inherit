@@ -1,10 +1,12 @@
 // app/routes/buildings+/index.tsx
 
 import { json, redirect, type ActionFunction, type LoaderFunction } from '@remix-run/node'
-import { useActionData, useLoaderData, useNavigate, Form, useSubmit, Link } from '@remix-run/react'
-import { ArrowRight, BarChart3, Building2, Home, Info, PlusCircle, Trash2 } from 'lucide-react'
+import { useActionData, useLoaderData, useNavigate, Form, useSubmit } from '@remix-run/react'
+import { ArrowRight, Building2, PlusCircle, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { createDefaultPillarsForBuilding } from '#app/models/building.server.js'
+import BuildingSidebar from '../../components/BuildingSidebar'
+import BuildingTopNavigation from '../../components/BuildingTopNavigation'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -130,40 +132,14 @@ export default function BuildingsIndex() {
   return (
     <div className="flex h-screen bg-white border border-slate-100 my-4">
       {/* Sidebar */}
-      <div className="w-64 bg-white borde border-r-2 border-slate-50">
-        <div className="p-4">
-          <h1 className="text-2xl font-bold mb-4">Buildings dasboard</h1>
-          <nav>
-            <Link to="/" className="flex items-center py-2 px-4 text-gray-700 hover:bg-gray-200 rounded">
-              <Home className="mr-2" size={20} />
-              Home
-            </Link>
-            <Link to="/buildings" className="flex items-center py-2 px-4 bg-gray-200 text-gray-700 rounded">
-              <Building2 className="mr-2" size={20} />
-              Buildings
-            </Link>
-            <Link to="/pillar-information" className="flex items-center py-2 px-4 text-gray-700 hover:bg-gray-200 rounded">
-              <Info className="mr-2" size={20} />
-              Pillar Information
-            </Link>
-            <Link to="/scoring-system" className="flex items-center py-2 px-4 text-gray-700 hover:bg-gray-200 rounded">
-              <BarChart3 className="mr-2" size={20} />
-              Scoring system
-            </Link>
-          </nav>
-        </div>
-      </div>
+      <BuildingSidebar />
 
       {/* Main content */}
       <div className="flex-1 overflow-auto">
         <div className="p-8">
           {/* Top navigation */}
           <div className="flex justify-between items-center mb-6">
-            <div className="space-x-4 border border-slate-200 rounded-md p-2">
-              <Button variant="secondary" className="bg-gray-200">Buildings</Button>
-              <Button variant="ghost">Scoring System</Button>
-              <Button variant="ghost">Pillars</Button>
-            </div>
+            <BuildingTopNavigation />
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button>

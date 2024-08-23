@@ -66,41 +66,191 @@ const { getSession, commitSession } = createCookieSessionStorage({
 })
 
 const kpiDefinitions = [
-	{ id: 'energy-total', name: 'Energy intensity (total)', targetValue: 30, positiveContribution: 0, kpiWeight: 0 },
-	{ id: 'energy-heating', name: 'Energy intensity (heating)', targetValue: 12, positiveContribution: 0, kpiWeight: 1.25 },
-	{ id: 'energy-cooling', name: 'Energy intensity (cooling)', targetValue: 8, positiveContribution: 0, kpiWeight: 1.25 },
-	{ id: 'energy-lighting', name: 'Energy intensity (lighting)', targetValue: 5, positiveContribution: 0, kpiWeight: 1.25 },
-	{ id: 'energy-other', name: 'Energy intensity (other uses)', targetValue: 4, positiveContribution: 0, kpiWeight: 1.25 },
-	{ id: 'energy-res', name: 'Energy produced from RES', targetValue: 1.00, positiveContribution: 1, kpiWeight: 2.5 },
-	{ id: 'sri-total', name: 'Total Smart Readiness Indicator', targetValue: 1.00, positiveContribution: 1, kpiWeight: 1.67 },
-	{ id: 'sri-performance', name: 'Energy Performance & Operation (SRI)', targetValue: 1.00, positiveContribution: 1, kpiWeight: 1.67 },
-	{ id: 'sri-user-needs', name: 'Respond to User Needs (SRI)', targetValue: 1.00, positiveContribution: 1, kpiWeight: 1.67 },
-	{ id: 'energy-flexibility', name: 'Energy flexibility (SRI)', targetValue: 1.00, positiveContribution: 1, kpiWeight: 1.67 },
-	{ id: 'temp-frequency', name: 'Indoor Air Temperature Frequency', targetValue: 1.00, positiveContribution: 1, kpiWeight: 2.5 },
-	{ id: 'humidity-frequency', name: 'Indoor Humidity Frequency', targetValue: 1.00, positiveContribution: 1, kpiWeight: 2.5 },
-	{ id: 'co2-frequency', name: 'Indoor CO2 Concentration Frequency', targetValue: 1.00, positiveContribution: 1, kpiWeight: 2.5 },
-	{ id: 'illuminance-frequency', name: 'Illuminance Frequency', targetValue: 1.00, positiveContribution: 1, kpiWeight: 2.5 },
-	{ id: 'noise-frequency', name: 'Noise Level Frequency', targetValue: 1.00, positiveContribution: 1, kpiWeight: 2.5 },
-  ];
+	{
+		id: 'energy-total',
+		name: 'Energy intensity (total)',
+		targetValue: 30,
+		positiveContribution: 0,
+		kpiWeight: 0,
+	},
+	{
+		id: 'energy-heating',
+		name: 'Energy intensity (heating)',
+		targetValue: 12,
+		positiveContribution: 0,
+		kpiWeight: 1.25,
+	},
+	{
+		id: 'energy-cooling',
+		name: 'Energy intensity (cooling)',
+		targetValue: 8,
+		positiveContribution: 0,
+		kpiWeight: 1.25,
+	},
+	{
+		id: 'energy-lighting',
+		name: 'Energy intensity (lighting)',
+		targetValue: 5,
+		positiveContribution: 0,
+		kpiWeight: 1.25,
+	},
+	{
+		id: 'energy-other',
+		name: 'Energy intensity (other uses)',
+		targetValue: 4,
+		positiveContribution: 0,
+		kpiWeight: 1.25,
+	},
+	{
+		id: 'energy-res',
+		name: 'Energy produced from RES',
+		targetValue: 1.0,
+		positiveContribution: 1,
+		kpiWeight: 2.5,
+	},
+	{
+		id: 'sri-total',
+		name: 'Total Smart Readiness Indicator',
+		targetValue: 1.0,
+		positiveContribution: 1,
+		kpiWeight: 1.67,
+	},
+	{
+		id: 'sri-performance',
+		name: 'Energy Performance & Operation (SRI)',
+		targetValue: 1.0,
+		positiveContribution: 1,
+		kpiWeight: 1.67,
+	},
+	{
+		id: 'sri-user-needs',
+		name: 'Respond to User Needs (SRI)',
+		targetValue: 1.0,
+		positiveContribution: 1,
+		kpiWeight: 1.67,
+	},
+	{
+		id: 'energy-flexibility',
+		name: 'Energy flexibility (SRI)',
+		targetValue: 1.0,
+		positiveContribution: 1,
+		kpiWeight: 1.67,
+	},
+	{
+		id: 'temp-frequency',
+		name: 'Indoor Air Temperature Frequency',
+		targetValue: 1.0,
+		positiveContribution: 1,
+		kpiWeight: 2.5,
+	},
+	{
+		id: 'humidity-frequency',
+		name: 'Indoor Humidity Frequency',
+		targetValue: 1.0,
+		positiveContribution: 1,
+		kpiWeight: 2.5,
+	},
+	{
+		id: 'co2-frequency',
+		name: 'Indoor CO2 Concentration Frequency',
+		targetValue: 1.0,
+		positiveContribution: 1,
+		kpiWeight: 2.5,
+	},
+	{
+		id: 'illuminance-frequency',
+		name: 'Illuminance Frequency',
+		targetValue: 1.0,
+		positiveContribution: 1,
+		kpiWeight: 2.5,
+	},
+	{
+		id: 'noise-frequency',
+		name: 'Noise Level Frequency',
+		targetValue: 1.0,
+		positiveContribution: 1,
+		kpiWeight: 2.5,
+	},
+]
 
 // KPI validation schema
 const kpiValidationSchema = z.object({
-	'energy-total': z.coerce.number().positive().max(1000).describe('Energy intensity (total) in kWh/m²'),
-	'energy-heating': z.coerce.number().positive().max(1000).describe('Energy intensity (heating) in kWh/(m²*DD)'),
-	'energy-cooling': z.coerce.number().positive().max(1000).describe('Energy intensity (cooling) in kWh/(m²*DD)'),
-	'energy-lighting': z.coerce.number().positive().max(1000).describe('Energy intensity (lighting) in kWh/m²'),
-	'energy-other': z.coerce.number().positive().max(1000).describe('Energy intensity (other uses) in kWh/m²'),
-	'energy-res': z.coerce.number().min(0).max(1).describe('Energy produced from RES (0-1)'),
-	'sri-total': z.coerce.number().min(0).max(1).describe('Total Smart Readiness Indicator (0-1)'),
-	'sri-performance': z.coerce.number().min(0).max(1).describe('Energy Performance & Operation (SRI) (0-1)'),
-	'sri-user-needs': z.coerce.number().min(0).max(1).describe('Respond to User Needs (SRI) (0-1)'),
-	'energy-flexibility': z.coerce.number().min(0).max(1).describe('Energy flexibility (SRI) (0-1)'),
-	'temp-frequency': z.coerce.number().min(0).max(1).describe('Indoor Air Temperature Frequency (0-1)'),
-	'humidity-frequency': z.coerce.number().min(0).max(1).describe('Indoor Humidity Frequency (0-1)'),
-	'co2-frequency': z.coerce.number().min(0).max(1).describe('Indoor CO2 Concentration Frequency (0-1)'),
-	'illuminance-frequency': z.coerce.number().min(0).max(1).describe('Illuminance Frequency (0-1)'),
-	'noise-frequency': z.coerce.number().min(0).max(1).describe('Noise Level Frequency (0-1)'),
-  });
+	'energy-total': z.coerce
+		.number()
+		.positive()
+		.max(1000)
+		.describe('Energy intensity (total) in kWh/m²'),
+	'energy-heating': z.coerce
+		.number()
+		.positive()
+		.max(1000)
+		.describe('Energy intensity (heating) in kWh/(m²*DD)'),
+	'energy-cooling': z.coerce
+		.number()
+		.positive()
+		.max(1000)
+		.describe('Energy intensity (cooling) in kWh/(m²*DD)'),
+	'energy-lighting': z.coerce
+		.number()
+		.positive()
+		.max(1000)
+		.describe('Energy intensity (lighting) in kWh/m²'),
+	'energy-other': z.coerce
+		.number()
+		.positive()
+		.max(1000)
+		.describe('Energy intensity (other uses) in kWh/m²'),
+	'energy-res': z.coerce
+		.number()
+		.min(0)
+		.max(1)
+		.describe('Energy produced from RES (0-1)'),
+	'sri-total': z.coerce
+		.number()
+		.min(0)
+		.max(1)
+		.describe('Total Smart Readiness Indicator (0-1)'),
+	'sri-performance': z.coerce
+		.number()
+		.min(0)
+		.max(1)
+		.describe('Energy Performance & Operation (SRI) (0-1)'),
+	'sri-user-needs': z.coerce
+		.number()
+		.min(0)
+		.max(1)
+		.describe('Respond to User Needs (SRI) (0-1)'),
+	'energy-flexibility': z.coerce
+		.number()
+		.min(0)
+		.max(1)
+		.describe('Energy flexibility (SRI) (0-1)'),
+	'temp-frequency': z.coerce
+		.number()
+		.min(0)
+		.max(1)
+		.describe('Indoor Air Temperature Frequency (0-1)'),
+	'humidity-frequency': z.coerce
+		.number()
+		.min(0)
+		.max(1)
+		.describe('Indoor Humidity Frequency (0-1)'),
+	'co2-frequency': z.coerce
+		.number()
+		.min(0)
+		.max(1)
+		.describe('Indoor CO2 Concentration Frequency (0-1)'),
+	'illuminance-frequency': z.coerce
+		.number()
+		.min(0)
+		.max(1)
+		.describe('Illuminance Frequency (0-1)'),
+	'noise-frequency': z.coerce
+		.number()
+		.min(0)
+		.max(1)
+		.describe('Noise Level Frequency (0-1)'),
+})
 
 type ValidatedFormData = z.infer<typeof kpiValidationSchema>
 
@@ -294,11 +444,8 @@ function calculateAchievement(
 		: (target / current) * 100
 }
 
-function calculateScore(
-	achievement: number,
-	kpiWeight: number,
-): number {
-	return (achievement / 100) * kpiWeight;
+function calculateScore(achievement: number, kpiWeight: number): number {
+	return (achievement / 100) * kpiWeight
 }
 
 export default function EnergyPerformanceAssessment() {
