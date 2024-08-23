@@ -1,8 +1,8 @@
 // app/routes/buildings+/index.tsx
 
 import { json, redirect, type ActionFunction, type LoaderFunction } from '@remix-run/node'
-import { useActionData, useLoaderData, useNavigate, Form, useSubmit } from '@remix-run/react'
-import { ArrowRight, PlusCircle, Trash2 } from 'lucide-react'
+import { useActionData, useLoaderData, useNavigate, Form, useSubmit, Link } from '@remix-run/react'
+import { ArrowRight, BarChart3, Building2, Home, Info, PlusCircle, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { createDefaultPillarsForBuilding } from '#app/models/building.server.js'
 import {
@@ -128,92 +128,137 @@ export default function BuildingsIndex() {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Buildings</h1>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="default">
-              <PlusCircle className="mr-2 h-4 w-4" /> Add New Building
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add New Building</DialogTitle>
-              <DialogDescription>
-                Enter the details of the new building here.
-              </DialogDescription>
-            </DialogHeader>
-            <Form method="post" className="space-y-4" onSubmit={() => handleDialogClose()}>
-              <input type="hidden" name="intent" value="create" />
-              <div>
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  type="text"
-                  id="name"
-                  name="name"
-                  aria-invalid={actionData?.errors?.name ? true : undefined}
-                  aria-errormessage={actionData?.errors?.name ? "name-error" : undefined}
-                />
-                {actionData?.errors?.name && (
-                  <p className="text-red-500 text-sm" id="name-error">{actionData.errors.name}</p>
-                )}
-              </div>
-              <div>
-                <Label htmlFor="address">Address</Label>
-                <Input
-                  type="text"
-                  id="address"
-                  name="address"
-                  aria-invalid={actionData?.errors?.address ? true : undefined}
-                  aria-errormessage={actionData?.errors?.address ? "address-error" : undefined}
-                />
-                {actionData?.errors?.address && (
-                  <p className="text-red-500 text-sm" id="address-error">{actionData.errors.address}</p>
-                )}
-              </div>
-              <Button type="submit">Add Building</Button>
-            </Form>
-          </DialogContent>
-        </Dialog>
+    <div className="flex h-screen bg-white border border-slate-100 my-4">
+      {/* Sidebar */}
+      <div className="w-64 bg-white borde border-r-2 border-slate-50">
+        <div className="p-4">
+          <h1 className="text-2xl font-bold mb-4">Buildings dasboard</h1>
+          <nav>
+            <Link to="/" className="flex items-center py-2 px-4 text-gray-700 hover:bg-gray-200 rounded">
+              <Home className="mr-2" size={20} />
+              Home
+            </Link>
+            <Link to="/buildings" className="flex items-center py-2 px-4 bg-gray-200 text-gray-700 rounded">
+              <Building2 className="mr-2" size={20} />
+              Buildings
+            </Link>
+            <Link to="/pillar-information" className="flex items-center py-2 px-4 text-gray-700 hover:bg-gray-200 rounded">
+              <Info className="mr-2" size={20} />
+              Pillar Information
+            </Link>
+            <Link to="/scoring-system" className="flex items-center py-2 px-4 text-gray-700 hover:bg-gray-200 rounded">
+              <BarChart3 className="mr-2" size={20} />
+              Scoring system
+            </Link>
+          </nav>
+        </div>
       </div>
 
-      {buildings.length === 0 ? (
-        <div className="text-center py-10">
-          <p className="text-xl mb-4">No buildings added yet.</p>
-          <Button onClick={() => setIsDialogOpen(true)}>
-            <PlusCircle className="mr-2 h-4 w-4" /> Add Your First Building
-          </Button>
-        </div>
-      ) : (
-        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {buildings.map((building) => (
-            <li key={building.id} className="rounded border p-4 shadow-sm">
-              <h2 className="text-lg font-semibold">{building.name}</h2>
-              <p className="mb-4 text-gray-600">{building.address}</p>
-              <div className="flex justify-between items-center">
-                <Button
-                  variant="link"
-                  className="p-0"
-                  onClick={() => navigate(`/buildings/${building.id}`)}
-                >
-                  <div className="flex items-center">
-                    View Building
-                    <ArrowRight size={16} className="ml-2" />
+      {/* Main content */}
+      <div className="flex-1 overflow-auto">
+        <div className="p-8">
+          {/* Top navigation */}
+          <div className="flex justify-between items-center mb-6">
+            <div className="space-x-4 border border-slate-200 rounded-md p-2">
+              <Button variant="secondary" className="bg-gray-200">Buildings</Button>
+              <Button variant="ghost">Scoring System</Button>
+              <Button variant="ghost">Pillars</Button>
+            </div>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <PlusCircle className="mr-2 h-4 w-4" /> Add new Building
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add New Building</DialogTitle>
+                  <DialogDescription>
+                    Enter the details of the new building here.
+                  </DialogDescription>
+                </DialogHeader>
+                <Form method="post" className="space-y-4" onSubmit={() => handleDialogClose()}>
+                  <input type="hidden" name="intent" value="create" />
+                  <div>
+                    <Label htmlFor="name">Name</Label>
+                    <Input
+                      type="text"
+                      id="name"
+                      name="name"
+                      aria-invalid={actionData?.errors?.name ? true : undefined}
+                      aria-errormessage={actionData?.errors?.name ? "name-error" : undefined}
+                    />
+                    {actionData?.errors?.name && (
+                      <p className="text-red-500 text-sm" id="name-error">{actionData.errors.name}</p>
+                    )}
                   </div>
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  onClick={() => handleDeleteClick(building.id)}
-                >
-                  <Trash2 size={16} />
-                </Button>
+                  <div>
+                    <Label htmlFor="address">Address</Label>
+                    <Input
+                      type="text"
+                      id="address"
+                      name="address"
+                      aria-invalid={actionData?.errors?.address ? true : undefined}
+                      aria-errormessage={actionData?.errors?.address ? "address-error" : undefined}
+                    />
+                    {actionData?.errors?.address && (
+                      <p className="text-red-500 text-sm" id="address-error">{actionData.errors.address}</p>
+                    )}
+                  </div>
+                  <Button type="submit">Add Building</Button>
+                </Form>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          <h2 className="text-2xl font-bold mb-2">Your buildings</h2>
+          <p className="text-gray-600 mb-6">Your list of buildings, you can add and view your buildings here.</p>
+
+          {buildings.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="inline-block p-3 bg-gray-200 rounded-full mb-4">
+                <Building2 size={48} className="text-gray-400" />
               </div>
-            </li>
-          ))}
-        </ul>
-      )}
+              <h3 className="text-xl font-semibold mb-2">No Building added</h3>
+              <p className="text-gray-600 mb-4">You have not added any building. Add one below.</p>
+              <Button onClick={() => setIsDialogOpen(true)}>
+                Add Building
+              </Button>
+            </div>
+          ) : (
+            <ul className="grid grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+              {buildings.map((building) => (
+                <li key={building.id} className="bg-white rounded-lg border border-slate-200 shadow-sm p-4">
+                  <h3 className="text-lg font-semibold mb-2">{building.name}</h3>
+                  <p className="text-gray-600 mb-4">{building.address}</p>
+                  <div className="flex justify-between items-center">
+                    <Button
+                      variant="link"
+                      className="p-0 text-blue-600"
+                      onClick={() => navigate(`/buildings/${building.id}`)}
+                    >
+                      <div className="flex items-center">
+                        View Building
+                        <ArrowRight size={16} className="ml-2" />
+                      </div>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteClick(building.id)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <Trash2 size={16} />
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      {/* Delete Building Alert Dialog */}
       <AlertDialog open={!!buildingToDelete} onOpenChange={(open) => !open && setBuildingToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
