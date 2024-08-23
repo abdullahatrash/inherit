@@ -1,9 +1,9 @@
 // app/routes/buildings+/$buildingId.results.tsx
 import { json, type LoaderFunction } from '@remix-run/node';
 import { useLoaderData, Link } from '@remix-run/react';
-import { PolarAngleAxis, PolarGrid, Radar, RadarChart } from 'recharts';
 import { ChevronLeft, HomeIcon, Landmark } from 'lucide-react';
-import { prisma } from '../../utils/db.server';
+import React from 'react';
+import { PolarAngleAxis, PolarGrid, Radar, RadarChart } from 'recharts';
 import { Button } from '../../components/ui/button';
 import {
   Card,
@@ -13,6 +13,12 @@ import {
   CardTitle,
 } from '../../components/ui/card';
 import {
+  type ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '../../components/ui/chart';
+import {
   Table,
   TableBody,
   TableCell,
@@ -20,13 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from '../../components/ui/table';
-import {
-  type ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '../../components/ui/chart';
-import React from 'react';
+import { prisma } from '../../utils/db.server';
 
 type LoaderData = {
   building: {

@@ -42,16 +42,16 @@ export default function AssessmentDashboard({ pillars, buildingId }: { pillars: 
 
   return (
     <div className="container mx-auto p-4">
-      <Link to={`/buildings`} className='flex items-center gap-1 pb-4 hover:text-blue-500'>
+      <Link to={`/buildings/${buildingId}`} className='flex items-center gap-1 pb-4 hover:text-blue-500'>
         <ChevronLeft className="inline-block w-6 h-6" />
-        Back to buildings
+        Back to building Assessments
       </Link>
       <h1 className="text-2xl font-bold mb-4">INHERIT Assessment Dashboard</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {pillars.map((pillar) => (
+        {pillars.map((pillar) => 
           
           <Link key={pillar.id} to={getPillarAssessmentLink(pillar)}>
-            <Card>
+            <Card className="transition group hover:bg-slate-100">
               <CardHeader>
                 <CardTitle>{pillar.name}</CardTitle>
               </CardHeader>
@@ -62,7 +62,7 @@ export default function AssessmentDashboard({ pillars, buildingId }: { pillars: 
               </CardContent>
             </Card>
           </Link>
-        ))}
+        )}
       </div>
     </div>
   );
