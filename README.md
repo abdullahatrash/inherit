@@ -1,54 +1,21 @@
-<div align="center">
-  <h1 align="center"><a href="https://www.epicweb.dev/epic-stack">The Epic Stack 🚀</a></h1>
-  <strong align="center">
-    Ditch analysis paralysis and start shipping Epic Web apps.
-  </strong>
-  <p>
-    This is an opinionated project starter and reference that allows teams to
-    ship their ideas to production faster and on a more stable foundation based
-    on the experience of <a href="https://kentcdodds.com">Kent C. Dodds</a> and
-    <a href="https://github.com/epicweb-dev/epic-stack/graphs/contributors">contributors</a>.
-  </p>
-</div>
+# INHERIT Assessment Tool
 
-```sh
-npx create-epic-app@latest
-```
+## Overview
 
-[![The Epic Stack](https://github-production-user-asset-6210df.s3.amazonaws.com/1500684/246885449-1b00286c-aa3d-44b2-9ef2-04f694eb3592.png)](https://www.epicweb.dev/epic-stack)
+The INHERIT assessment tool is a next-generation solution designed for European cultural heritage buildings. It aims to provide advanced tools and methodologies to assess and improve the sustainability and resilience of these historic structures.
 
-[The Epic Stack](https://www.epicweb.dev/epic-stack)
+## Getting Started
 
-<hr />
+To get started with the INHERIT assessment tool, follow these steps:
 
-## Watch Kent's Introduction to The Epic Stack
+1. **Login**: [Get started](Not developed yet)
+2. **Start the Assessment**: [Start the assessment](https://inherit.fly.dev/)
 
-[![Epic Stack Talk slide showing Flynn Rider with knives, the text "I've been around and I've got opinions" and Kent speaking in the corner](https://github-production-user-asset-6210df.s3.amazonaws.com/1500684/277818553-47158e68-4efc-43ae-a477-9d1670d4217d.png)](https://www.epicweb.dev/talks/the-epic-stack)
 
-["The Epic Stack" by Kent C. Dodds](https://www.epicweb.dev/talks/the-epic-stack)
+## Development Status
 
-## Docs
+Please note that the assessment tool is still under development. We are continuously working to improve its features and capabilities.
 
-[Read the docs](https://github.com/epicweb-dev/epic-stack/blob/main/docs)
-(please 🙏).
+## Contact
 
-## Support
-
-- 🆘 Join the
-  [discussion on GitHub](https://github.com/epicweb-dev/epic-stack/discussions)
-  and the [KCD Community on Discord](https://kcd.im/discord).
-- 💡 Create an
-  [idea discussion](https://github.com/epicweb-dev/epic-stack/discussions/new?category=ideas)
-  for suggestions.
-- 🐛 Open a [GitHub issue](https://github.com/epicweb-dev/epic-stack/issues) to
-  report a bug.
-
-## Branding
-
-Want to talk about the Epic Stack in a blog post or talk? Great! Here are some
-assets you can use in your material:
-[EpicWeb.dev/brand](https://epicweb.dev/brand)
-
-## Thanks
-
-You rock 🪨
+For more information, please visit our [website](https://inheritproject.eu/) or contact us at [info@inheritproject.eu](mailto:info@inheritproject.eu).
