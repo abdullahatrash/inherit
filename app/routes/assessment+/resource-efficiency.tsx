@@ -1,8 +1,8 @@
 // app/routes/assessment+/resource-efficiency.tsx
 
-import { json, type LoaderFunction, type ActionFunction } from '@remix-run/node'
+import { json, type LoaderFunction, type ActionFunction, createCookieSessionStorage } from '@remix-run/node'
 import { useLoaderData, useActionData, Form, useNavigation, Link } from '@remix-run/react'
-import { TrendingUp } from 'lucide-react'
+import { InfoIcon, TrendingUp } from 'lucide-react'
 import {
 	PolarAngleAxis,
 	PolarGrid,
@@ -14,6 +14,8 @@ import {
 	LabelList,
 	Line,
 } from 'recharts'
+import { z } from 'zod';
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '#app/components/ui/tooltip.js';
 import { Button } from '../../components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../../components/ui/card.js'
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '../../components/ui/chart.js'
@@ -29,194 +31,337 @@ import {
 } from '../../components/ui/table'
 import { prisma } from '../../utils/db.server'
 
-interface KPIData {
-	id: string
-	name: string
-	currentValue: number
-	targetValue: number
-	positiveContribution: number
-	pillarWeight: number
-	kpiWeight: number
-	achievement: number
-	score: number
-}
+const { getSession, commitSession } = createCookieSessionStorage({
+	cookie: {
+		name: 'energy_performance_session',
+		secrets: ['s3cr3t'], // replace this with an actual secret
+		sameSite: 'lax',
+	},
+})
+
+// interface KPIData {
+// 	id: string
+// 	name: string
+// 	currentValue: number
+// 	targetValue: number
+// 	positiveContribution: number
+// 	pillarWeight: number
+// 	kpiWeight: number
+// 	achievement: number
+// 	score: number
+// }
 
 const kpiDefinitions = [
-  { id: 'water-consumption', name: 'Total Water Consumption', targetValue: 50, positiveContribution: 0, kpiWeight: 2.5 },
-  { id: 'materials', name: 'Bill of materials', targetValue: 100, positiveContribution: 1, kpiWeight: 2.5 },
-  { id: 'gwp', name: 'Global Warming Potential', targetValue: 10, positiveContribution: 0, kpiWeight: 2.5 },
-  { id: 'investment', name: 'Total Investment', targetValue: 1000000, positiveContribution: 1, kpiWeight: 2.5 },
-  { id: 'annual-costs', name: 'Total Annual Costs', targetValue: 100000, positiveContribution: 0, kpiWeight: 2.5 },
-  { id: 'payback-period', name: 'Payback Period', targetValue: 5, positiveContribution: 0, kpiWeight: 2.5 },
-  { id: 'lcc', name: 'Life Cycle Cost', targetValue: 500000, positiveContribution: 0, kpiWeight: 2.5 },
-  { id: 'energy-circularity', name: 'Energy Circularity Indicator', targetValue: 100, positiveContribution: 1, kpiWeight: 2.5 },
-  { id: 'water-circularity', name: 'Water Circularity Indicator', targetValue: 100, positiveContribution: 1, kpiWeight: 2.5 },
-  { id: 'material-circularity', name: 'Material Circularity Indicator', targetValue: 100, positiveContribution: 1, kpiWeight: 2.5 },
-]
+	{ id: 'water-consumption', name: 'Total Water Consumption', targetValue: 1.0, positiveContribution: 0, kpiWeight: 2.5, explanation: 'The total amount of water consumed by the building in a given period.' },
+	{ id: 'materials', name: 'Bill of materials', targetValue: 1.0, positiveContribution: 1, kpiWeight: 2.5, explanation: 'The total cost of materials used in the construction of the building.' },
+	{ id: 'gwp', name: 'Global Warming Potential', targetValue: 1.0, positiveContribution: 0, kpiWeight: 2.5, explanation: 'The total amount of greenhouse gases emitted by the building in a given period.' },
+	{ id: 'investment', name: 'Total Investment', targetValue: 1.0, positiveContribution: 1, kpiWeight: 2.5, explanation: 'The total amount of money invested in the building.' },
+	{ id: 'annual-costs', name: 'Total Annual Costs', targetValue: 1.0, positiveContribution: 0, kpiWeight: 2.5, explanation: 'The total annual costs of operating the building.' },
+	{ id: 'payback-period', name: 'Payback Period', targetValue: 5, positiveContribution: 0, kpiWeight: 2.5, explanation: 'The number of years it takes for the building to pay back the initial investment.' },
+	{ id: 'lcc', name: 'Life Cycle Cost', targetValue: 1.0, positiveContribution: 0, kpiWeight: 2.5, explanation: 'The total cost of owning and operating the building over its lifetime.' },
+	{ id: 'energy-circularity', name: 'Energy Circularity Indicator', targetValue: 1.0, positiveContribution: 1, kpiWeight: 2.5, explanation: 'The percentage of energy consumed by the building that is renewable or recycled.' },
+	{ id: 'water-circularity', name: 'Water Circularity Indicator', targetValue: 1.0, positiveContribution: 1, kpiWeight: 2.5, explanation: 'The percentage of water consumed by the building that is renewable or recycled.' },
+	{ id: 'material-circularity', name: 'Material Circularity Indicator', targetValue: 1.0, positiveContribution: 1, kpiWeight: 2.5, explanation: 'The percentage of materials used in the building that are renewable or recycled.' },
+  ];
 
-export const loader: LoaderFunction = async ({ request }) => {
-  const url = new URL(request.url)
-  const buildingId = url.searchParams.get('buildingId')
+  function getKPIExplanation(kpiId: string): string {
+    const kpi = kpiDefinitions.find((kpi) => kpi.id === kpiId)
+    return kpi ? kpi.explanation : 'No explanation available.'
+}
+  
+  const kpiValidationSchema = z.object(
+	kpiDefinitions.reduce((schema, kpi) => {
+	  schema[kpi.id] = z.coerce.number().min(0).max(1000).describe(kpi.name);
+	  return schema;
+	}, {} as Record<string, z.ZodTypeAny>)
+  );
 
-  if (!buildingId) {
-    throw new Response('Building ID is required', { status: 400 })
-  }
+  type ValidatedFormData = z.infer<typeof kpiValidationSchema>
 
-  const pillar = await prisma.pillar.findFirst({
-    where: { buildingId, name: 'Resource Efficiency' },
-    include: { kpis: true },
-  })
-
-  if (!pillar) {
-    throw new Response('Resource Efficiency pillar not found for this building', { status: 404 })
-  }
-
-  return json({ buildingId, pillar })
+interface LoaderData {
+	buildingId: string
+	pillar: {
+		id: string
+		name: string
+		kpis: Array<{
+			id: string
+			name: string
+			currentValue: number
+			targetValue: number
+			positiveContribution: boolean
+			weight: number
+			score: number
+			pillarId: string
+		}>
+	}
 }
 
-export const action: ActionFunction = async ({ request }) => {
-    const formData = await request.formData()
-    const buildingId = formData.get("buildingId") as string
-  
-    if (!buildingId) {
-      return json({ error: "Building ID is required" }, { status: 400 })
-    }
-  
-    const pillar = await prisma.pillar.findFirst({
-      where: { buildingId, name: "Resource Efficiency" },
-      include: { kpis: true },
-    });
-  
-    if (!pillar) {
-      return json({ error: "Resource Efficiency pillar not found for this building" }, { status: 404 })
-    }
-  
-    const kpiData = await Promise.all(kpiDefinitions.map(async (kpi) => {
-      const currentValue = Number(formData.get(kpi.id))
-      const achievement = calculateAchievement(
-        currentValue,
-        kpi.targetValue,
-        kpi.positiveContribution,
-      )
-      const score = calculateScore(achievement, kpi.kpiWeight)
-  
-      let existingKPI = await prisma.kPI.findFirst({
-        where: {
-          pillarId: pillar.id,
-          name: kpi.name,
-        },
-      })
-  
-      if (existingKPI) {
-        existingKPI = await prisma.kPI.update({
-          where: { id: existingKPI.id },
-          data: {
-            currentValue,
-            score,
-          },
-        })
-      } else {
-        existingKPI = await prisma.kPI.create({
-          data: {
-            name: kpi.name,
-            currentValue,
-            targetValue: kpi.targetValue,
-            positiveContribution: kpi.positiveContribution === 1,
-            weight: kpi.kpiWeight,
-            score,
-            pillar: { connect: { id: pillar.id } },
-          },
-        })
-      }
-  
-      return {
-        ...kpi,
-        currentValue,
-        achievement,
-        score,
-      }
-    }))
-  
-    const totalScore = kpiData.reduce((sum, kpi) => sum + kpi.score, 0)
-    await prisma.pillar.update({
-      where: { id: pillar.id },
-      data: { score: totalScore },
-    })
-  
-    return json({ kpiData, pillarScore: totalScore })
-  }
+export const loader: LoaderFunction = async ({ request }) => {
+	const url = new URL(request.url)
+	const buildingId = url.searchParams.get('buildingId')
 
-  function calculateAchievement(
-	currentValue: number,
-	targetValue: number,
+	if (!buildingId) {
+		throw new Response('Building ID is required', { status: 400 })
+	}
+
+	const pillar = await prisma.pillar.findFirst({
+		where: { buildingId, name: 'Energy Performance' },
+		include: { kpis: true },
+	})
+
+	if (!pillar) {
+		throw new Response('Accessibility pillar not found for this building', {
+			status: 404,
+		})
+	}
+
+	const session = await getSession(request.headers.get('Cookie'))
+	const previousValues = session.get('previousValues') || {}
+
+	return json(
+		{ buildingId, pillar, previousValues },
+		{
+			headers: {
+				'Set-Cookie': await commitSession(session),
+			},
+		},
+	)
+}
+
+interface ActionData {
+	errors?: Record<string, string[]>
+	kpiData?: Array<{
+		id: string
+		name: string
+		currentValue: number
+		targetValue: number
+		positiveContribution: number
+		kpiWeight: number
+		achievement: number
+		score: number
+	}>
+	pillarScore?: number
+}
+
+export const action: ActionFunction = async ({
+	request,
+}): Promise<Response> => {
+	const formData = await request.formData()
+	const buildingId = formData.get('buildingId') as string
+
+	if (!buildingId) {
+		return json({ error: 'Building ID is required' }, { status: 400 })
+	}
+
+	const rawFormData = Object.fromEntries(formData.entries())
+	const session = await getSession(request.headers.get('Cookie'))
+
+	try {
+		const validatedData = kpiValidationSchema.parse(rawFormData)
+
+		const pillar = await prisma.pillar.findFirst({
+			where: { buildingId, name: 'Energy Performance' },
+			include: { kpis: true },
+		})
+
+		if (!pillar) {
+			return json(
+				{ error: 'Energy Performance pillar not found for this building' },
+				{ status: 404 },
+			)
+		}
+
+		let totalScore = 0
+		const kpiData = await Promise.all(
+			kpiDefinitions.map(async (kpi) => {
+				const currentValue = validatedData[
+					kpi.id as keyof ValidatedFormData
+				] as number
+				const achievement = calculateAchievement(
+					currentValue,
+					kpi.targetValue,
+					kpi.positiveContribution,
+				)
+				const score = calculateScore(achievement, kpi.kpiWeight)
+				totalScore += score
+
+				let existingKPI = await prisma.kPI.findFirst({
+					where: {
+						pillarId: pillar.id,
+						name: kpi.name,
+					},
+				})
+
+				if (existingKPI) {
+					existingKPI = await prisma.kPI.update({
+						where: { id: existingKPI.id },
+						data: {
+							currentValue,
+							score,
+							achievement,
+						},
+					})
+				} else {
+					existingKPI = await prisma.kPI.create({
+						data: {
+							name: kpi.name,
+							currentValue,
+							targetValue: kpi.targetValue,
+							positiveContribution: kpi.positiveContribution === 1,
+							weight: kpi.kpiWeight,
+							score,
+							achievement,
+							pillar: { connect: { id: pillar.id } },
+						},
+					})
+				}
+
+				return {
+					...kpi,
+					currentValue,
+					achievement,
+					score,
+				}
+			}),
+		)
+
+		await prisma.pillar.update({
+			where: { id: pillar.id },
+			data: { score: totalScore },
+		})
+
+		// If successful, clear the previous values from the session
+		session.unset('previousValues')
+		return json(
+			{ kpiData, pillarScore: totalScore },
+			{
+				headers: {
+					'Set-Cookie': await commitSession(session),
+				},
+			},
+		)
+	} catch (error) {
+		if (error instanceof z.ZodError) {
+			// Store the submitted values in the session
+			session.set('previousValues', rawFormData)
+			return json(
+				{ errors: error.flatten().fieldErrors },
+				{
+					status: 400,
+					headers: {
+						'Set-Cookie': await commitSession(session),
+					},
+				},
+			)
+		}
+		return json({ error: 'An unexpected error occurred' }, { status: 500 })
+	}
+}
+function calculateAchievement(
+	current: number,
+	target: number,
 	positiveContribution: number,
 ): number {
 	return positiveContribution === 1
-		? (currentValue / targetValue) * 100
-		: (targetValue / currentValue) * 100
+		? (current / target) * 100
+		: (target / current) * 100
 }
 
-function calculateScore(achievement: number, weight: number): number {
-	return (achievement / 100) * weight
+function calculateScore(achievement: number, kpiWeight: number): number {
+	return (achievement / 100) * kpiWeight
 }
+
 
 export default function ResourceEfficiencyAssessment() {
-	const { buildingId, pillar } = useLoaderData<{ buildingId: string; pillar: any }>();
-	const actionData = useActionData<{ kpiData: any[] }>();
-	const navigation = useNavigation();
-	const isSubmitting = navigation.state === 'submitting';
+	const { buildingId, pillar } = useLoaderData<LoaderData | undefined>()
+	const actionData = useActionData<ActionData>()
+	const navigation = useNavigation()
+	const isSubmitting = navigation.state === 'submitting'
 
-	const initialKpiData: Record<string, number> = pillar.kpis.reduce(
-		(acc: Record<string, number>, kpi: KPIData) => {
-			acc[kpi.name] = kpi.currentValue
-			return acc
+	const previousValues =
+		useLoaderData<Record<string, string>>()?.previousValues || {}
+
+	const radarChartData = (actionData?.kpiData ?? []).map((kpi) => ({
+		kpi: kpi.name,
+		achievement: kpi.achievement,
+	}))
+
+	const chartConfig = {
+		achievement: {
+			label: 'Achievement (%)',
+			color: 'hsl(var(--chart-1))',
 		},
-		{},
-	)
+	} satisfies ChartConfig
 
-  const radarChartData =
-  actionData?.kpiData.map((kpi) => ({
-      kpi: kpi.name,
-      achievement: kpi.achievement,
-  })) || []
+	return (
+		<div className="container mx-auto p-4">
+			<h1 className="mb-4 text-2xl font-bold">Energy Performance Assessment</h1>
 
-const chartConfig = {
-  achievement: {
-      label: 'Achievement (%)',
-      color: 'hsl(var(--chart-1))',
-  },
-} satisfies ChartConfig
-
-  return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Resource Efficiency Assessment</h1>
-
-      {!actionData ? (
-        <Form method="post" className="space-y-4">
-          <input type="hidden" name="buildingId" value={buildingId} />
-          
-          {kpiDefinitions.map((kpi) => (
-            <div key={kpi.id}>
-              <Label htmlFor={kpi.id}>{kpi.name}</Label>
-              <Input
-                type="number"
-                id={kpi.id}
-                name={kpi.id}
-                defaultValue={initialKpiData[kpi.name] || ''}
-                required
-              />
-            </div>
-          ))}
-
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Calculating...' : 'Calculate Scores'}
-          </Button>
-        </Form>
-      ) : (
-        <div className="space-y-8">
+			{isSubmitting ? (
+				<p>Calculating...</p>
+			) : !actionData?.kpiData ? (
+				<Form
+					method="post"
+					className="space-y-4 rounded-md border border-slate-100 p-4"
+				>
+					<input type="hidden" name="buildingId" value={buildingId} />
+					<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+						{kpiDefinitions.map((kpi) => (
+							<div key={kpi.id} className="contents">
+								<div className="space-y-2">
+									<Label className="flex items-center" htmlFor={kpi.id}>
+										{kpi.name}
+										<TooltipProvider>
+											<Tooltip>
+												<TooltipTrigger>
+													<InfoIcon className="h-6 w-6" />
+												</TooltipTrigger>
+												<TooltipContent>
+													Target value {kpi.targetValue}
+												</TooltipContent>
+											</Tooltip>
+										</TooltipProvider>
+									</Label>
+									<Input
+										type="number"
+										id={kpi.id}
+										name={kpi.id}
+										defaultValue={
+											(previousValues as Record<string, string>)[kpi.id] ||
+											pillar.kpis
+												.find((k) => k.name === kpi.name)
+												?.currentValue?.toString() ||
+											''
+										}
+										required
+										step="0.01"
+									/>
+									{actionData?.errors?.[kpi.id] && (
+										<p className="text-sm text-red-500">
+											{actionData.errors[kpi.id]}
+										</p>
+									)}
+								</div>
+								<div className="space-y-2">
+									<h3 className="font-semibold">{kpi.name} Explanation</h3>
+									<p className="text-sm text-gray-600">
+										{getKPIExplanation(kpi.id)}
+									</p>
+								</div>
+							</div>
+						))}
+					</div>
+					<Button type="submit" disabled={isSubmitting}>
+						{isSubmitting ? 'Calculating...' : 'Calculate Scores'}
+					</Button>
+				</Form>
+			) : (
+				<div className="space-y-8">
 					<Link to={`/buildings/${buildingId}`}>
-            			<Button variant="outline" className="mt-4">Back to Building</Button>
-          			</Link>
+						<Button variant="outline" className="mt-4">
+							Back to Building
+						</Button>
+					</Link>
 					<Card>
 						<CardHeader>
 							<CardTitle>KPI Summary</CardTitle>
@@ -244,6 +389,10 @@ const chartConfig = {
 									))}
 								</TableBody>
 							</Table>
+							<p className="mt-4 font-bold">
+								Total Pillar Score:{' '}
+								{actionData.pillarScore?.toFixed(4) ?? 'N/A'}
+							</p>
 						</CardContent>
 					</Card>
 					<div className="space-y-8">
@@ -292,14 +441,15 @@ const chartConfig = {
 							))}
 						</div>
 					</div>
-        
-          <Link to={`/buildings/${buildingId}`}>
-            <Button variant="outline">Back to Building</Button>
-          </Link>
-        </div>
-      )}
-    </div>
-  )
+					<Link to={`/buildings/${buildingId}`}>
+						<Button variant="outline" className="mt-4">
+							Back to Building
+						</Button>
+					</Link>
+				</div>
+			)}
+		</div>
+	)
 }
 
 
@@ -392,3 +542,4 @@ export function KPILineChart({ kpi }: KPILineChartProps) {
 		</Card>
 	)
 }
+
