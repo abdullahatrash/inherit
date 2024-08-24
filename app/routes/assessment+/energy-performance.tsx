@@ -11,7 +11,7 @@ import {
 	useLoaderData,
 	useNavigation,
 } from '@remix-run/react'
-import { InfoIcon, TrendingUp } from 'lucide-react'
+import { ChevronLeft, InfoIcon, TrendingUp } from 'lucide-react'
 import {
 	PolarAngleAxis,
 	PolarGrid,
@@ -439,9 +439,17 @@ function calculateAchievement(
 	target: number,
 	positiveContribution: number,
 ): number {
-	return positiveContribution === 1
+	// Avoid division by zero
+	if (target === 0 && current === 0) return 0; // Both are zero, undefined achievement, return 0
+	if (target === 0) return 0; // Target is zero, should return 0 achievement
+	if (current === 0) return 0; // Current is zero, should return 0 achievement
+	
+	const achievement = positiveContribution === 1
 		? (current / target) * 100
-		: (target / current) * 100
+		: (target / current) * 100;
+
+	// Optional: Cap the achievement at 100%
+	return Math.min(achievement, 100);
 }
 
 function calculateScore(achievement: number, kpiWeight: number): number {
@@ -471,6 +479,14 @@ export default function EnergyPerformanceAssessment() {
 
 	return (
 		<div className="container mx-auto p-4">
+			<Link
+				to={`/assessment?buildingId=${buildingId}`}
+				className="flex items-center gap-1 pb-4 hover:text-blue-500"
+			>
+				<ChevronLeft className="inline-block h-6 w-6" />
+				Back to Assessment dashboard
+			</Link>
+
 			<h1 className="mb-4 text-2xl font-bold">Energy Performance Assessment</h1>
 
 			{isSubmitting ? (

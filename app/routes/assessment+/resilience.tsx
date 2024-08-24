@@ -1,8 +1,19 @@
 // app/routes/assessment+/resilience.tsx
 
-import { json, type LoaderFunction, type ActionFunction, createCookieSessionStorage } from '@remix-run/node'
-import { useLoaderData, useActionData, Form, useNavigation, Link } from '@remix-run/react'
-import { InfoIcon, TrendingUp } from 'lucide-react'
+import {
+	json,
+	type LoaderFunction,
+	type ActionFunction,
+	createCookieSessionStorage,
+} from '@remix-run/node'
+import {
+	useLoaderData,
+	useActionData,
+	Form,
+	useNavigation,
+	Link,
+} from '@remix-run/react'
+import { ChevronLeft, InfoIcon, TrendingUp } from 'lucide-react'
 import {
 	PolarAngleAxis,
 	PolarGrid,
@@ -15,10 +26,27 @@ import {
 	Line,
 } from 'recharts'
 import { z } from 'zod'
-import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '#app/components/ui/tooltip.js'
+import {
+	Tooltip,
+	TooltipProvider,
+	TooltipTrigger,
+	TooltipContent,
+} from '#app/components/ui/tooltip.js'
 import { Button } from '../../components/ui/button'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../../components/ui/card.js'
-import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '../../components/ui/chart.js'
+import {
+	Card,
+	CardHeader,
+	CardTitle,
+	CardDescription,
+	CardContent,
+	CardFooter,
+} from '../../components/ui/card.js'
+import {
+	type ChartConfig,
+	ChartContainer,
+	ChartTooltip,
+	ChartTooltipContent,
+} from '../../components/ui/chart.js'
 import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
 import {
@@ -33,7 +61,7 @@ import { prisma } from '../../utils/db.server'
 
 const { getSession, commitSession } = createCookieSessionStorage({
 	cookie: {
-		name: 'energy_performance_session',
+		name: 'Resilience_session',
 		secrets: ['s3cr3t'], // replace this with an actual secret
 		sameSite: 'lax',
 	},
@@ -58,7 +86,8 @@ const kpiDefinitions = [
 		targetValue: 1.0,
 		positiveContribution: 1,
 		kpiWeight: 5.0,
-		explanation: 'This KPI measures the completeness of the inventory of hazards in the building.',
+		explanation:
+			'This KPI measures the completeness of the inventory of hazards in the building.',
 	},
 	{
 		id: 'hazard-identification',
@@ -66,7 +95,8 @@ const kpiDefinitions = [
 		targetValue: 1.0,
 		positiveContribution: 1,
 		kpiWeight: 5.0,
-		explanation: 'This KPI measures the completeness of the identification of hazards in the building.',
+		explanation:
+			'This KPI measures the completeness of the identification of hazards in the building.',
 	},
 	{
 		id: 'risk-assessment',
@@ -74,7 +104,8 @@ const kpiDefinitions = [
 		targetValue: 1.0,
 		positiveContribution: 1,
 		kpiWeight: 5.0,
-		explanation: 'This KPI measures the completeness of the risk assessment and management plans in the building.',
+		explanation:
+			'This KPI measures the completeness of the risk assessment and management plans in the building.',
 	},
 	{
 		id: 'risk-impact',
@@ -82,7 +113,8 @@ const kpiDefinitions = [
 		targetValue: 1.0,
 		positiveContribution: 1,
 		kpiWeight: 5.0,
-		explanation: 'This KPI measures the completeness of the risk impact assessment in the building.',
+		explanation:
+			'This KPI measures the completeness of the risk impact assessment in the building.',
 	},
 	{
 		id: 'risk-level',
@@ -90,21 +122,25 @@ const kpiDefinitions = [
 		targetValue: 1.0,
 		positiveContribution: 1,
 		kpiWeight: 5.0,
-		explanation: 'This KPI measures the completeness of the evaluation of the risk impact level in the building.',
+		explanation:
+			'This KPI measures the completeness of the evaluation of the risk impact level in the building.',
 	},
 ]
 
 function getKPIExplanation(kpiId: string): string {
-    const kpi = kpiDefinitions.find((kpi) => kpi.id === kpiId)
-    return kpi ? kpi.explanation : 'No explanation available.'
+	const kpi = kpiDefinitions.find((kpi) => kpi.id === kpiId)
+	return kpi ? kpi.explanation : 'No explanation available.'
 }
 
 const kpiValidationSchema = z.object(
-	kpiDefinitions.reduce((schema, kpi) => {
-	  schema[kpi.id] = z.coerce.number().min(0).max(1000).describe(kpi.name);
-	  return schema;
-	}, {} as Record<string, z.ZodTypeAny>)
-  );
+	kpiDefinitions.reduce(
+		(schema, kpi) => {
+			schema[kpi.id] = z.coerce.number().min(0).max(1000).describe(kpi.name)
+			return schema
+		},
+		{} as Record<string, z.ZodTypeAny>,
+	),
+)
 
 type ValidatedFormData = z.infer<typeof kpiValidationSchema>
 
@@ -135,12 +171,12 @@ export const loader: LoaderFunction = async ({ request }) => {
 	}
 
 	const pillar = await prisma.pillar.findFirst({
-		where: { buildingId, name: 'Energy Performance' },
+		where: { buildingId, name: 'Climate Resilience' },
 		include: { kpis: true },
 	})
 
 	if (!pillar) {
-		throw new Response('Accessibility pillar not found for this building', {
+		throw new Response('Resilience pillar not found for this building', {
 			status: 404,
 		})
 	}
@@ -190,13 +226,13 @@ export const action: ActionFunction = async ({
 		const validatedData = kpiValidationSchema.parse(rawFormData)
 
 		const pillar = await prisma.pillar.findFirst({
-			where: { buildingId, name: 'Energy Performance' },
+			where: { buildingId, name: 'Climate Resilience' },
 			include: { kpis: true },
 		})
 
 		if (!pillar) {
 			return json(
-				{ error: 'Energy Performance pillar not found for this building' },
+				{ error: 'Resilience pillar not found for this building' },
 				{ status: 404 },
 			)
 		}
@@ -292,15 +328,22 @@ function calculateAchievement(
 	target: number,
 	positiveContribution: number,
 ): number {
-	return positiveContribution === 1
+	// Avoid division by zero
+	if (target === 0 && current === 0) return 0; // Both are zero, undefined achievement, return 0
+	if (target === 0) return 0; // Target is zero, should return 0 achievement
+	if (current === 0) return 0; // Current is zero, should return 0 achievement
+	
+	const achievement = positiveContribution === 1
 		? (current / target) * 100
-		: (target / current) * 100
+		: (target / current) * 100;
+
+	// Optional: Cap the achievement at 100%
+	return Math.min(achievement, 100);
 }
 
 function calculateScore(achievement: number, kpiWeight: number): number {
 	return (achievement / 100) * kpiWeight
 }
-
 
 export default function ResilienceAssessment() {
 	const { buildingId, pillar } = useLoaderData<LoaderData | undefined>()
@@ -323,10 +366,16 @@ export default function ResilienceAssessment() {
 		},
 	} satisfies ChartConfig
 
-
 	return (
 		<div className="container mx-auto p-4">
-			<h1 className="mb-4 text-2xl font-bold">Energy Performance Assessment</h1>
+			<Link
+				to={`/assessment?buildingId=${buildingId}`}
+				className="flex items-center gap-1 pb-4 hover:text-blue-500"
+			>
+				<ChevronLeft className="inline-block h-6 w-6" />
+				Back to Assessment dashboard
+			</Link>
+			<h1 className="mb-4 text-2xl font-bold">Resilience to climate and human-made hazards Assessment</h1>
 
 			{isSubmitting ? (
 				<p>Calculating...</p>

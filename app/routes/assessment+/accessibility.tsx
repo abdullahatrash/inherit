@@ -13,7 +13,7 @@ import {
 	useNavigation,
 	Link,
 } from '@remix-run/react'
-import { InfoIcon, TrendingUp } from 'lucide-react'
+import { ChevronLeft, InfoIcon, TrendingUp } from 'lucide-react'
 import {
 	PolarAngleAxis,
 	PolarGrid,
@@ -51,12 +51,17 @@ import {
 	TableHeader,
 	TableRow,
 } from '../../components/ui/table'
-import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '../../components/ui/tooltip.js'
+import {
+	Tooltip,
+	TooltipProvider,
+	TooltipTrigger,
+	TooltipContent,
+} from '../../components/ui/tooltip.js'
 import { prisma } from '../../utils/db.server'
 
 const { getSession, commitSession } = createCookieSessionStorage({
 	cookie: {
-		name: 'energy_performance_session',
+		name: 'accessibility_session',
 		secrets: ['s3cr3t'], // replace this with an actual secret
 		sameSite: 'lax',
 	},
@@ -75,83 +80,84 @@ const { getSession, commitSession } = createCookieSessionStorage({
 // }
 
 const kpiDefinitions = [
-    {
-        id: 'accessibility-level',
-        name: 'Accessibility level (FAS)',
-        targetValue: 1.0,
-        positiveContribution: 1,
-        kpiWeight: 2.8,
-        explanation: 'Measures the level of accessibility in the facility.',
-    },
-    {
-        id: 'inclusiveness-level',
-        name: 'Inclusiveness level (FAS)',
-        targetValue: 1.0,
-        positiveContribution: 1,
-        kpiWeight: 2.8,
-        explanation: 'Measures the level of inclusiveness in the facility.',
-    },
-    {
-        id: 'direct-revenue',
-        name: 'Direct revenue from tourism',
-        targetValue: 1.0,
-        positiveContribution: 1,
-        kpiWeight: 2.8,
-        explanation: 'Measures the direct revenue generated from tourism.',
-    },
-    {
-        id: 'indirect-revenue',
-        name: 'Indirect revenue through tourism attraction',
-        targetValue: 1.0,
-        positiveContribution: 1,
-        kpiWeight: 2.8,
-        explanation: 'Measures the indirect revenue generated through tourism attraction.',
-    },
-    {
-        id: 'property-value',
-        name: 'Increased property value',
-        targetValue: 1.0,
-        positiveContribution: 1,
-        kpiWeight: 2.8,
-        explanation: 'Measures the increase in property value.',
-    },
-    {
-        id: 'local-jobs',
-        name: 'Number of local jobs created',
-        targetValue: 1.0,
-        positiveContribution: 1,
-        kpiWeight: 2.8,
-        explanation: 'Measures the number of local jobs created.',
-    },
-    {
-        id: 'public-investment',
-        name: 'Investment in public infrastructure',
-        targetValue: 1.0,
-        positiveContribution: 1,
-        kpiWeight: 2.8,
-        explanation: 'Measures the investment in public infrastructure.',
-    },
-    {
-        id: 'cultural-enrichment',
-        name: 'Cultural enrichment',
-        targetValue: 1.0,
-        positiveContribution: 1,
-        kpiWeight: 2.8,
-        explanation: 'Measures the level of cultural enrichment.',
-    },
-    {
-        id: 'public-perception',
-        name: 'Public perception',
-        targetValue: 1.0,
-        positiveContribution: 1,
-        kpiWeight: 2.8,
-        explanation: 'Measures the public perception of the facility.',
-    },
+	{
+		id: 'accessibility-level',
+		name: 'Accessibility level (FAS)',
+		targetValue: 1.0,
+		positiveContribution: 1,
+		kpiWeight: 2.8,
+		explanation: 'Measures the level of accessibility in the facility.',
+	},
+	{
+		id: 'inclusiveness-level',
+		name: 'Inclusiveness level (FAS)',
+		targetValue: 1.0,
+		positiveContribution: 1,
+		kpiWeight: 2.8,
+		explanation: 'Measures the level of inclusiveness in the facility.',
+	},
+	{
+		id: 'direct-revenue',
+		name: 'Direct revenue from tourism',
+		targetValue: 1.0,
+		positiveContribution: 1,
+		kpiWeight: 2.8,
+		explanation: 'Measures the direct revenue generated from tourism.',
+	},
+	{
+		id: 'indirect-revenue',
+		name: 'Indirect revenue through tourism attraction',
+		targetValue: 1.0,
+		positiveContribution: 1,
+		kpiWeight: 2.8,
+		explanation:
+			'Measures the indirect revenue generated through tourism attraction.',
+	},
+	{
+		id: 'property-value',
+		name: 'Increased property value',
+		targetValue: 1.0,
+		positiveContribution: 1,
+		kpiWeight: 2.8,
+		explanation: 'Measures the increase in property value.',
+	},
+	{
+		id: 'local-jobs',
+		name: 'Number of local jobs created',
+		targetValue: 1.0,
+		positiveContribution: 1,
+		kpiWeight: 2.8,
+		explanation: 'Measures the number of local jobs created.',
+	},
+	{
+		id: 'public-investment',
+		name: 'Investment in public infrastructure',
+		targetValue: 1.0,
+		positiveContribution: 1,
+		kpiWeight: 2.8,
+		explanation: 'Measures the investment in public infrastructure.',
+	},
+	{
+		id: 'cultural-enrichment',
+		name: 'Cultural enrichment',
+		targetValue: 1.0,
+		positiveContribution: 1,
+		kpiWeight: 2.8,
+		explanation: 'Measures the level of cultural enrichment.',
+	},
+	{
+		id: 'public-perception',
+		name: 'Public perception',
+		targetValue: 1.0,
+		positiveContribution: 1,
+		kpiWeight: 2.8,
+		explanation: 'Measures the public perception of the facility.',
+	},
 ]
 
 function getKPIExplanation(kpiId: string): string {
-    const kpi = kpiDefinitions.find((kpi) => kpi.id === kpiId)
-    return kpi ? kpi.explanation : 'No explanation available.'
+	const kpi = kpiDefinitions.find((kpi) => kpi.id === kpiId)
+	return kpi ? kpi.explanation : 'No explanation available.'
 }
 
 const kpiValidationSchema = z.object({
@@ -231,7 +237,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 	}
 
 	const pillar = await prisma.pillar.findFirst({
-		where: { buildingId, name: 'Energy Performance' },
+		where: { buildingId, name: 'Accessibility' },
 		include: { kpis: true },
 	})
 
@@ -286,13 +292,13 @@ export const action: ActionFunction = async ({
 		const validatedData = kpiValidationSchema.parse(rawFormData)
 
 		const pillar = await prisma.pillar.findFirst({
-			where: { buildingId, name: 'Energy Performance' },
+			where: { buildingId, name: 'Accessibility' },
 			include: { kpis: true },
 		})
 
 		if (!pillar) {
 			return json(
-				{ error: 'Energy Performance pillar not found for this building' },
+				{ error: 'Accessibility pillar not found for this building' },
 				{ status: 404 },
 			)
 		}
@@ -388,9 +394,17 @@ function calculateAchievement(
 	target: number,
 	positiveContribution: number,
 ): number {
-	return positiveContribution === 1
+	// Avoid division by zero
+	if (target === 0 && current === 0) return 0; // Both are zero, undefined achievement, return 0
+	if (target === 0) return 0; // Target is zero, should return 0 achievement
+	if (current === 0) return 0; // Current is zero, should return 0 achievement
+	
+	const achievement = positiveContribution === 1
 		? (current / target) * 100
-		: (target / current) * 100
+		: (target / current) * 100;
+
+	// Optional: Cap the achievement at 100%
+	return Math.min(achievement, 100);
 }
 
 function calculateScore(achievement: number, kpiWeight: number): number {
@@ -420,7 +434,14 @@ export default function AccessibilityAssessment() {
 
 	return (
 		<div className="container mx-auto p-4">
-			<h1 className="mb-4 text-2xl font-bold">Energy Performance Assessment</h1>
+			<Link
+				to={`/assessment?buildingId=${buildingId}`}
+				className="flex items-center gap-1 pb-4 hover:text-blue-500"
+			>
+				<ChevronLeft className="inline-block h-6 w-6" />
+				Back to Assessment dashboard
+			</Link>
+			<h1 className="mb-4 text-2xl font-bold">Accessibility, inclusiveness, openness and socioeconomic sustainability Assessment</h1>
 
 			{isSubmitting ? (
 				<p>Calculating...</p>

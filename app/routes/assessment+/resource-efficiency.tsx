@@ -1,8 +1,19 @@
 // app/routes/assessment+/resource-efficiency.tsx
 
-import { json, type LoaderFunction, type ActionFunction, createCookieSessionStorage } from '@remix-run/node'
-import { useLoaderData, useActionData, Form, useNavigation, Link } from '@remix-run/react'
-import { InfoIcon, TrendingUp } from 'lucide-react'
+import {
+	json,
+	type LoaderFunction,
+	type ActionFunction,
+	createCookieSessionStorage,
+} from '@remix-run/node'
+import {
+	useLoaderData,
+	useActionData,
+	Form,
+	useNavigation,
+	Link,
+} from '@remix-run/react'
+import { ChevronLeft, InfoIcon, TrendingUp } from 'lucide-react'
 import {
 	PolarAngleAxis,
 	PolarGrid,
@@ -14,11 +25,28 @@ import {
 	LabelList,
 	Line,
 } from 'recharts'
-import { z } from 'zod';
-import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '#app/components/ui/tooltip.js';
+import { z } from 'zod'
+import {
+	Tooltip,
+	TooltipProvider,
+	TooltipTrigger,
+	TooltipContent,
+} from '#app/components/ui/tooltip.js'
 import { Button } from '../../components/ui/button'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../../components/ui/card.js'
-import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '../../components/ui/chart.js'
+import {
+	Card,
+	CardHeader,
+	CardTitle,
+	CardDescription,
+	CardContent,
+	CardFooter,
+} from '../../components/ui/card.js'
+import {
+	type ChartConfig,
+	ChartContainer,
+	ChartTooltip,
+	ChartTooltipContent,
+} from '../../components/ui/chart.js'
 import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
 import {
@@ -33,7 +61,7 @@ import { prisma } from '../../utils/db.server'
 
 const { getSession, commitSession } = createCookieSessionStorage({
 	cookie: {
-		name: 'energy_performance_session',
+		name: 'resource_efficiency_session',
 		secrets: ['s3cr3t'], // replace this with an actual secret
 		sameSite: 'lax',
 	},
@@ -52,31 +80,112 @@ const { getSession, commitSession } = createCookieSessionStorage({
 // }
 
 const kpiDefinitions = [
-	{ id: 'water-consumption', name: 'Total Water Consumption', targetValue: 1.0, positiveContribution: 0, kpiWeight: 2.5, explanation: 'The total amount of water consumed by the building in a given period.' },
-	{ id: 'materials', name: 'Bill of materials', targetValue: 1.0, positiveContribution: 1, kpiWeight: 2.5, explanation: 'The total cost of materials used in the construction of the building.' },
-	{ id: 'gwp', name: 'Global Warming Potential', targetValue: 1.0, positiveContribution: 0, kpiWeight: 2.5, explanation: 'The total amount of greenhouse gases emitted by the building in a given period.' },
-	{ id: 'investment', name: 'Total Investment', targetValue: 1.0, positiveContribution: 1, kpiWeight: 2.5, explanation: 'The total amount of money invested in the building.' },
-	{ id: 'annual-costs', name: 'Total Annual Costs', targetValue: 1.0, positiveContribution: 0, kpiWeight: 2.5, explanation: 'The total annual costs of operating the building.' },
-	{ id: 'payback-period', name: 'Payback Period', targetValue: 5, positiveContribution: 0, kpiWeight: 2.5, explanation: 'The number of years it takes for the building to pay back the initial investment.' },
-	{ id: 'lcc', name: 'Life Cycle Cost', targetValue: 1.0, positiveContribution: 0, kpiWeight: 2.5, explanation: 'The total cost of owning and operating the building over its lifetime.' },
-	{ id: 'energy-circularity', name: 'Energy Circularity Indicator', targetValue: 1.0, positiveContribution: 1, kpiWeight: 2.5, explanation: 'The percentage of energy consumed by the building that is renewable or recycled.' },
-	{ id: 'water-circularity', name: 'Water Circularity Indicator', targetValue: 1.0, positiveContribution: 1, kpiWeight: 2.5, explanation: 'The percentage of water consumed by the building that is renewable or recycled.' },
-	{ id: 'material-circularity', name: 'Material Circularity Indicator', targetValue: 1.0, positiveContribution: 1, kpiWeight: 2.5, explanation: 'The percentage of materials used in the building that are renewable or recycled.' },
-  ];
+	{
+		id: 'water-consumption',
+		name: 'Total Water Consumption',
+		targetValue: 1.0,
+		positiveContribution: 0,
+		kpiWeight: 2.5,
+		explanation:
+			'The total amount of water consumed by the building in a given period.',
+	},
+	{
+		id: 'materials',
+		name: 'Bill of materials',
+		targetValue: 1.0,
+		positiveContribution: 1,
+		kpiWeight: 2.5,
+		explanation:
+			'The total cost of materials used in the construction of the building.',
+	},
+	{
+		id: 'gwp',
+		name: 'Global Warming Potential',
+		targetValue: 1.0,
+		positiveContribution: 0,
+		kpiWeight: 2.5,
+		explanation:
+			'The total amount of greenhouse gases emitted by the building in a given period.',
+	},
+	{
+		id: 'investment',
+		name: 'Total Investment',
+		targetValue: 1.0,
+		positiveContribution: 1,
+		kpiWeight: 2.5,
+		explanation: 'The total amount of money invested in the building.',
+	},
+	{
+		id: 'annual-costs',
+		name: 'Total Annual Costs',
+		targetValue: 1.0,
+		positiveContribution: 0,
+		kpiWeight: 2.5,
+		explanation: 'The total annual costs of operating the building.',
+	},
+	{
+		id: 'payback-period',
+		name: 'Payback Period',
+		targetValue: 5,
+		positiveContribution: 0,
+		kpiWeight: 2.5,
+		explanation:
+			'The number of years it takes for the building to pay back the initial investment.',
+	},
+	{
+		id: 'lcc',
+		name: 'Life Cycle Cost',
+		targetValue: 1.0,
+		positiveContribution: 0,
+		kpiWeight: 2.5,
+		explanation:
+			'The total cost of owning and operating the building over its lifetime.',
+	},
+	{
+		id: 'energy-circularity',
+		name: 'Energy Circularity Indicator',
+		targetValue: 1.0,
+		positiveContribution: 1,
+		kpiWeight: 2.5,
+		explanation:
+			'The percentage of energy consumed by the building that is renewable or recycled.',
+	},
+	{
+		id: 'water-circularity',
+		name: 'Water Circularity Indicator',
+		targetValue: 1.0,
+		positiveContribution: 1,
+		kpiWeight: 2.5,
+		explanation:
+			'The percentage of water consumed by the building that is renewable or recycled.',
+	},
+	{
+		id: 'material-circularity',
+		name: 'Material Circularity Indicator',
+		targetValue: 1.0,
+		positiveContribution: 1,
+		kpiWeight: 2.5,
+		explanation:
+			'The percentage of materials used in the building that are renewable or recycled.',
+	},
+]
 
-  function getKPIExplanation(kpiId: string): string {
-    const kpi = kpiDefinitions.find((kpi) => kpi.id === kpiId)
-    return kpi ? kpi.explanation : 'No explanation available.'
+function getKPIExplanation(kpiId: string): string {
+	const kpi = kpiDefinitions.find((kpi) => kpi.id === kpiId)
+	return kpi ? kpi.explanation : 'No explanation available.'
 }
-  
-  const kpiValidationSchema = z.object(
-	kpiDefinitions.reduce((schema, kpi) => {
-	  schema[kpi.id] = z.coerce.number().min(0).max(1000).describe(kpi.name);
-	  return schema;
-	}, {} as Record<string, z.ZodTypeAny>)
-  );
 
-  type ValidatedFormData = z.infer<typeof kpiValidationSchema>
+const kpiValidationSchema = z.object(
+	kpiDefinitions.reduce(
+		(schema, kpi) => {
+			schema[kpi.id] = z.coerce.number().min(0).max(1000).describe(kpi.name)
+			return schema
+		},
+		{} as Record<string, z.ZodTypeAny>,
+	),
+)
+
+type ValidatedFormData = z.infer<typeof kpiValidationSchema>
 
 interface LoaderData {
 	buildingId: string
@@ -105,14 +214,17 @@ export const loader: LoaderFunction = async ({ request }) => {
 	}
 
 	const pillar = await prisma.pillar.findFirst({
-		where: { buildingId, name: 'Energy Performance' },
+		where: { buildingId, name: 'Resource Efficiency' },
 		include: { kpis: true },
 	})
 
 	if (!pillar) {
-		throw new Response('Accessibility pillar not found for this building', {
-			status: 404,
-		})
+		throw new Response(
+			'Resource Efficiency pillar not found for this building',
+			{
+				status: 404,
+			},
+		)
 	}
 
 	const session = await getSession(request.headers.get('Cookie'))
@@ -160,13 +272,13 @@ export const action: ActionFunction = async ({
 		const validatedData = kpiValidationSchema.parse(rawFormData)
 
 		const pillar = await prisma.pillar.findFirst({
-			where: { buildingId, name: 'Energy Performance' },
+			where: { buildingId, name: 'Resource Efficiency' },
 			include: { kpis: true },
 		})
 
 		if (!pillar) {
 			return json(
-				{ error: 'Energy Performance pillar not found for this building' },
+				{ error: 'Resource Efficiency pillar not found for this building' },
 				{ status: 404 },
 			)
 		}
@@ -262,15 +374,22 @@ function calculateAchievement(
 	target: number,
 	positiveContribution: number,
 ): number {
-	return positiveContribution === 1
+	// Avoid division by zero
+	if (target === 0 && current === 0) return 0; // Both are zero, undefined achievement, return 0
+	if (target === 0) return 0; // Target is zero, should return 0 achievement
+	if (current === 0) return 0; // Current is zero, should return 0 achievement
+	
+	const achievement = positiveContribution === 1
 		? (current / target) * 100
-		: (target / current) * 100
+		: (target / current) * 100;
+
+	// Optional: Cap the achievement at 100%
+	return Math.min(achievement, 100);
 }
 
 function calculateScore(achievement: number, kpiWeight: number): number {
 	return (achievement / 100) * kpiWeight
 }
-
 
 export default function ResourceEfficiencyAssessment() {
 	const { buildingId, pillar } = useLoaderData<LoaderData | undefined>()
@@ -295,7 +414,16 @@ export default function ResourceEfficiencyAssessment() {
 
 	return (
 		<div className="container mx-auto p-4">
-			<h1 className="mb-4 text-2xl font-bold">Energy Performance Assessment</h1>
+			<Link
+				to={`/assessment?buildingId=${buildingId}`}
+				className="flex items-center gap-1 pb-4 hover:text-blue-500"
+			>
+				<ChevronLeft className="inline-block h-6 w-6" />
+				Back to Assessment dashboard
+			</Link>
+			<h1 className="mb-4 text-2xl font-bold">
+				Resource Efficiency, Circularity and LCC Assessment
+			</h1>
 
 			{isSubmitting ? (
 				<p>Calculating...</p>
@@ -452,7 +580,6 @@ export default function ResourceEfficiencyAssessment() {
 	)
 }
 
-
 interface KPILineChartProps {
 	kpi: {
 		id: string
@@ -542,4 +669,3 @@ export function KPILineChart({ kpi }: KPILineChartProps) {
 		</Card>
 	)
 }
-
