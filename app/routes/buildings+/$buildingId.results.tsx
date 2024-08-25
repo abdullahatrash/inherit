@@ -80,7 +80,7 @@ export default function BuildingResults() {
 
   return (
     <div className="container mx-auto p-4">
-      <Link to={`/buildings/${building.id}`} className="flex items-center gap-1 pb-4 hover:text-blue-500">
+      <Link to={`/buildings/${building.id}`} className=" max-w-48 flex items-center gap-1 pb-4 hover:text-blue-500">
         <ChevronLeft className="inline-block w-6 h-6" />
         Back to Building
       </Link>

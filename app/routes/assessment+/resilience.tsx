@@ -370,7 +370,7 @@ export default function ResilienceAssessment() {
 		<div className="container mx-auto p-4">
 			<Link
 				to={`/assessment?buildingId=${buildingId}`}
-				className="flex items-center gap-1 pb-4 hover:text-blue-500"
+				className="  max-w-80 flex items-center gap-1 pb-4 hover:text-blue-500"
 			>
 				<ChevronLeft className="inline-block h-6 w-6" />
 				Back to Assessment dashboard
@@ -389,18 +389,20 @@ export default function ResilienceAssessment() {
 						{kpiDefinitions.map((kpi) => (
 							<div key={kpi.id} className="contents">
 								<div className="space-y-2">
-									<Label className="flex items-center" htmlFor={kpi.id}>
-										{kpi.name}
-										<TooltipProvider>
-											<Tooltip>
-												<TooltipTrigger>
-													<InfoIcon className="h-6 w-6" />
-												</TooltipTrigger>
-												<TooltipContent>
-													Target value {kpi.targetValue}
-												</TooltipContent>
-											</Tooltip>
-										</TooltipProvider>
+									<Label className="flex items-center gap-2" htmlFor={kpi.id}>
+									<span>{kpi.name}</span>
+										<span>
+											<TooltipProvider>
+												<Tooltip>
+													<TooltipTrigger>
+														<InfoIcon className="h-6 w-6" />
+													</TooltipTrigger>
+													<TooltipContent>
+														Target value {kpi.targetValue}
+													</TooltipContent>
+												</Tooltip>
+											</TooltipProvider>
+										</span>
 									</Label>
 									<Input
 										type="number"

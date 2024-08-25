@@ -42,7 +42,7 @@ export default function AssessmentDashboard({ pillars, buildingId }: { pillars: 
 
   return (
     <div className="container mx-auto p-4">
-      <Link to={`/buildings/${buildingId}`} className='flex items-center gap-1 pb-4 hover:text-blue-500'>
+      <Link to={`/buildings/${buildingId}`} className='max-w-80 flex items-center gap-1 pb-4 hover:text-blue-500'>
         <ChevronLeft className="inline-block w-6 h-6" />
         Back to building Assessments
       </Link>

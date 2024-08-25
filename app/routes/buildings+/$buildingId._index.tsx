@@ -188,7 +188,7 @@ export default function BuildingDetails() {
 		<div className="container mx-auto p-4">
 			<Link
 				to={`/buildings`}
-				className="flex items-center gap-1 pb-4 hover:text-blue-500"
+				className=" max-w-48 flex items-center gap-1 pb-4 hover:text-blue-500"
 			>
 				<ChevronLeft className="inline-block h-6 w-6" />
 				Back to buildings

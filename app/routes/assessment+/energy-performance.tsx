@@ -440,16 +440,17 @@ function calculateAchievement(
 	positiveContribution: number,
 ): number {
 	// Avoid division by zero
-	if (target === 0 && current === 0) return 0; // Both are zero, undefined achievement, return 0
-	if (target === 0) return 0; // Target is zero, should return 0 achievement
-	if (current === 0) return 0; // Current is zero, should return 0 achievement
-	
-	const achievement = positiveContribution === 1
-		? (current / target) * 100
-		: (target / current) * 100;
+	if (target === 0 && current === 0) return 0 // Both are zero, undefined achievement, return 0
+	if (target === 0) return 0 // Target is zero, should return 0 achievement
+	if (current === 0) return 0 // Current is zero, should return 0 achievement
+
+	const achievement =
+		positiveContribution === 1
+			? (current / target) * 100
+			: (target / current) * 100
 
 	// Optional: Cap the achievement at 100%
-	return Math.min(achievement, 100);
+	return Math.min(achievement, 100)
 }
 
 function calculateScore(achievement: number, kpiWeight: number): number {
@@ -481,7 +482,7 @@ export default function EnergyPerformanceAssessment() {
 		<div className="container mx-auto p-4">
 			<Link
 				to={`/assessment?buildingId=${buildingId}`}
-				className="flex items-center gap-1 pb-4 hover:text-blue-500"
+				className=" max-w-80 flex items-center gap-1 pb-4 hover:text-blue-500"
 			>
 				<ChevronLeft className="inline-block h-6 w-6" />
 				Back to Assessment dashboard
@@ -501,18 +502,20 @@ export default function EnergyPerformanceAssessment() {
 						{kpiDefinitions.map((kpi) => (
 							<div key={kpi.id} className="contents">
 								<div className="space-y-2">
-									<Label className="flex items-center" htmlFor={kpi.id}>
-										{kpi.name}
-										<TooltipProvider>
-											<Tooltip>
-												<TooltipTrigger>
-													<InfoIcon className="h-6 w-6" />
-												</TooltipTrigger>
-												<TooltipContent>
-													Target value {kpi.targetValue}
-												</TooltipContent>
-											</Tooltip>
-										</TooltipProvider>
+									<Label className="flex items-center gap-2" htmlFor={kpi.id}>
+										<span>{kpi.name}</span>
+										<span>
+											<TooltipProvider>
+												<Tooltip>
+													<TooltipTrigger>
+														<InfoIcon className="h-6 w-6" />
+													</TooltipTrigger>
+													<TooltipContent>
+														Target value {kpi.targetValue}
+													</TooltipContent>
+												</Tooltip>
+											</TooltipProvider>
+										</span>
 									</Label>
 									<Input
 										type="number"
